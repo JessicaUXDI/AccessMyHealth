@@ -51,8 +51,207 @@ const SCREENS = {
   APPOINTMENT: 'appointment',
   ADD_CONCERNS: 'add_concerns',
   DIAGNOSIS_PREVIEW: 'diagnosis_preview',
-  PLAN_OF_CARE: 'plan_of_care'
+  PLAN_OF_CARE: 'plan_of_care',
+  HEALTH_SYSTEM_DETAIL: 'health_system_detail'
 };
+
+// Detailed health system data
+const healthSystemDetails = {
+  hormones: {
+    recentVisits: [
+      { date: 'Nov 15, 2025', type: 'Lab Results', provider: 'Dr. Chen', summary: 'Hormone panel showed declining estrogen/progesterone trend' },
+      { date: 'Aug 10, 2025', type: 'Office Visit', provider: 'Dr. Chen', summary: 'Discussed cycle irregularity, ordered comprehensive hormone panel' },
+      { date: 'May 3, 2025', type: 'Lab Results', provider: 'Dr. Chen', summary: 'FSH levels within normal range for age' }
+    ],
+    labResults: [
+      { test: 'Estradiol', value: '95 pg/mL', date: 'Nov 15, 2025', range: 'Normal (declining trend)', status: 'insight' },
+      { test: 'Progesterone', value: '5 ng/mL', date: 'Nov 15, 2025', range: 'Normal (declining trend)', status: 'insight' },
+      { test: 'FSH', value: '28 mIU/mL', date: 'Aug 10, 2025', range: 'Elevated (perimenopause range)', status: 'insight' },
+      { test: 'TSH', value: '2.1 mIU/L', date: 'Aug 10, 2025', range: 'Normal', status: 'good' }
+    ],
+    complaints: [
+      { date: 'Aug 10, 2025', issue: 'Irregular cycles - varying from 24-38 days' },
+      { date: 'Aug 10, 2025', issue: 'Night sweats 2-3x per week' },
+      { date: 'May 3, 2025', issue: 'Brain fog and difficulty concentrating' }
+    ],
+    ageRelatedInsights: [
+      {
+        title: 'Perimenopause Transition',
+        likelihood: 'High',
+        description: 'Women in their 40s commonly experience hormonal fluctuations as ovarian function naturally declines.',
+        prevention: 'While perimenopause is a natural process, you can manage symptoms through hormone therapy (if appropriate), regular exercise, stress management, and maintaining a healthy weight.',
+        management: 'Track your symptoms to identify patterns. Consider low-dose hormone therapy, lifestyle modifications, and regular check-ins with your provider to adjust treatment as needed.'
+      },
+      {
+        title: 'Bone Density Changes',
+        likelihood: 'Moderate',
+        description: 'Declining estrogen during perimenopause can affect bone density, potentially increasing osteoporosis risk later.',
+        prevention: 'Weight-bearing exercise (walking, strength training), adequate calcium (1200mg/day) and vitamin D (800-1000 IU/day), and avoiding smoking can help maintain bone health.',
+        management: 'Consider a baseline bone density scan (DEXA) to establish your current status and guide prevention strategies.'
+      }
+    ]
+  },
+  mindbody: {
+    recentVisits: [
+      { date: 'Oct 20, 2025', type: 'Office Visit', provider: 'Dr. Chen', summary: 'Check-in on mood symptoms, sleep quality stable' },
+      { date: 'Jun 5, 2025', type: 'Lab Results', provider: 'Dr. Chen', summary: 'Thyroid and B12 levels normal' }
+    ],
+    labResults: [
+      { test: 'Vitamin B12', value: '485 pg/mL', date: 'Jun 5, 2025', range: 'Normal', status: 'good' },
+      { test: 'Vitamin D', value: '38 ng/mL', date: 'Jun 5, 2025', range: 'Adequate', status: 'good' },
+      { test: 'TSH', value: '2.1 mIU/L', date: 'Jun 5, 2025', range: 'Normal', status: 'good' }
+    ],
+    complaints: [
+      { date: 'Oct 20, 2025', issue: 'Occasional anxiety, particularly around cycle' },
+      { date: 'Aug 10, 2025', issue: 'Increased irritability and emotional sensitivity' }
+    ],
+    ageRelatedInsights: [
+      {
+        title: 'Hormonal Mood Changes',
+        likelihood: 'Moderate',
+        description: 'Fluctuating hormones during perimenopause can impact neurotransmitter function, affecting mood stability.',
+        prevention: 'Regular exercise (especially aerobic activity), stress reduction techniques like meditation or yoga, maintaining social connections, and adequate sleep can help stabilize mood.',
+        management: 'Track mood patterns in relation to your cycle. Cognitive behavioral therapy (CBT) has strong evidence for managing perimenopausal mood symptoms. Hormone therapy may also help if mood changes are significantly impacting quality of life.'
+      },
+      {
+        title: 'Cognitive Function',
+        likelihood: 'Low to Moderate',
+        description: 'Some women experience temporary changes in memory and focus during perimenopause, often called "brain fog."',
+        prevention: 'Mental stimulation, regular physical activity, quality sleep, stress management, and staying socially engaged support cognitive health.',
+        management: 'Most cognitive changes are temporary and resolve after menopause. If concerns persist, cognitive screening can rule out other causes.'
+      }
+    ]
+  },
+  cardiovascular: {
+    recentVisits: [
+      { date: 'Sep 12, 2025', type: 'Annual Physical', provider: 'Dr. Chen', summary: 'BP stable, cholesterol screening ordered' },
+      { date: 'Sep 12, 2025', type: 'Lab Results', provider: 'Dr. Chen', summary: 'Lipid panel within normal limits' }
+    ],
+    labResults: [
+      { test: 'Total Cholesterol', value: '185 mg/dL', date: 'Sep 12, 2025', range: 'Desirable (<200)', status: 'good' },
+      { test: 'LDL', value: '105 mg/dL', date: 'Sep 12, 2025', range: 'Near optimal (<130)', status: 'good' },
+      { test: 'HDL', value: '62 mg/dL', date: 'Sep 12, 2025', range: 'Protective (>60)', status: 'good' },
+      { test: 'Triglycerides', value: '90 mg/dL', date: 'Sep 12, 2025', range: 'Normal (<150)', status: 'good' },
+      { test: 'Blood Pressure', value: '118/76 mmHg', date: 'Nov 15, 2025', range: 'Normal', status: 'good' }
+    ],
+    complaints: [],
+    ageRelatedInsights: [
+      {
+        title: 'Cardiovascular Risk After Menopause',
+        likelihood: 'Moderate (Future)',
+        description: 'Estrogen provides cardiovascular protection. As levels decline through menopause, heart disease risk increases, eventually matching men\'s risk by age 70.',
+        prevention: 'Regular aerobic exercise (150 min/week), maintaining healthy weight, not smoking, managing stress, eating a Mediterranean-style diet rich in fruits, vegetables, whole grains, and healthy fats.',
+        management: 'Annual lipid screening, blood pressure monitoring, and discussing cardiovascular risk assessment with your provider. Some women may benefit from low-dose aspirin or statins based on individual risk factors.'
+      },
+      {
+        title: 'Blood Pressure Changes',
+        likelihood: 'Moderate',
+        description: 'Women often see blood pressure increase during and after menopause due to hormonal changes and aging of blood vessels.',
+        prevention: 'Limit sodium intake (<2300mg/day), maintain healthy weight, regular exercise, limit alcohol, and manage stress.',
+        management: 'Home blood pressure monitoring can help track trends. Early intervention with lifestyle changes or medication prevents complications.'
+      }
+    ]
+  },
+  musculoskeletal: {
+    recentVisits: [
+      { date: 'Nov 1, 2025', type: 'Office Visit', provider: 'Dr. Chen', summary: 'Reported increased joint stiffness in mornings' },
+      { date: 'Sep 12, 2025', type: 'Lab Results', provider: 'Dr. Chen', summary: 'Vitamin D adequate, considering bone density scan' }
+    ],
+    labResults: [
+      { test: 'Vitamin D', value: '38 ng/mL', date: 'Sep 12, 2025', range: 'Adequate (>30)', status: 'good' },
+      { test: 'Calcium', value: '9.4 mg/dL', date: 'Sep 12, 2025', range: 'Normal', status: 'good' }
+    ],
+    complaints: [
+      { date: 'Nov 1, 2025', issue: 'Joint stiffness in hands and knees, especially in morning' },
+      { date: 'Aug 10, 2025', issue: 'Occasional lower back discomfort' }
+    ],
+    ageRelatedInsights: [
+      {
+        title: 'Bone Density Decline',
+        likelihood: 'High',
+        description: 'Estrogen decline during perimenopause and menopause accelerates bone loss. Women can lose up to 20% of bone density in the 5-7 years after menopause.',
+        prevention: 'Weight-bearing exercise (walking, dancing, strength training) 3-4x/week, adequate calcium (1200mg/day from food and supplements), vitamin D (800-1000 IU/day), avoid smoking and excessive alcohol.',
+        management: 'Baseline DEXA scan recommended at age 65 (or earlier if risk factors present). Some women benefit from earlier screening. Medications like bisphosphonates are available if bone loss is significant.'
+      },
+      {
+        title: 'Joint Health and Arthritis',
+        likelihood: 'Moderate',
+        description: 'Hormonal changes can affect joint health. Many women first experience joint pain and stiffness during perimenopause.',
+        prevention: 'Maintain healthy weight (reduces stress on joints), low-impact exercise (swimming, cycling, yoga), anti-inflammatory diet rich in omega-3 fatty acids.',
+        management: 'Distinguish between hormonal joint pain and osteoarthritis through physical exam. Anti-inflammatory strategies, physical therapy, and sometimes hormone therapy can help. Regular movement prevents stiffness.'
+      },
+      {
+        title: 'Muscle Mass Changes',
+        likelihood: 'Moderate',
+        description: 'Declining estrogen and natural aging contribute to gradual muscle loss (sarcopenia), affecting strength and metabolism.',
+        prevention: 'Resistance training 2-3x/week, adequate protein intake (1.0-1.2g per kg body weight), staying active throughout the day.',
+        management: 'Strength training is the most effective intervention. Working with a physical therapist or trainer can help develop a safe, effective program.'
+      }
+    ]
+  },
+  digestion: {
+    recentVisits: [
+      { date: 'Sep 12, 2025', type: 'Annual Physical', provider: 'Dr. Chen', summary: 'Digestive health stable, no concerns reported' }
+    ],
+    labResults: [
+      { test: 'H. pylori', value: 'Negative', date: 'Mar 15, 2024', range: 'Normal', status: 'good' }
+    ],
+    complaints: [
+      { date: 'May 3, 2025', issue: 'Occasional bloating, seems worse before period' }
+    ],
+    ageRelatedInsights: [
+      {
+        title: 'Digestive Changes with Hormones',
+        likelihood: 'Low to Moderate',
+        description: 'Hormonal fluctuations can affect gut motility and may contribute to bloating, constipation, or digestive discomfort, especially around menstrual cycles.',
+        prevention: 'High-fiber diet (25-30g/day), adequate hydration, regular meal times, stress management, regular physical activity.',
+        management: 'Track digestive symptoms in relation to your cycle. Probiotics may help some women. Discuss persistent symptoms with your provider to rule out other conditions like IBS or food sensitivities.'
+      },
+      {
+        title: 'Metabolism and Weight Changes',
+        likelihood: 'Moderate to High',
+        description: 'Declining estrogen and age-related muscle loss can slow metabolism, making weight management more challenging during perimenopause.',
+        prevention: 'Strength training to maintain muscle mass, portion awareness, focusing on whole foods, limiting processed foods and added sugars, staying active.',
+        management: 'Small, sustainable changes work better than restrictive diets. Focus on nutrient-dense foods and building muscle through resistance exercise. Consider working with a registered dietitian familiar with perimenopause.'
+      }
+    ]
+  },
+  activity: {
+    recentVisits: [
+      { date: 'Oct 20, 2025', type: 'Office Visit', provider: 'Dr. Chen', summary: 'Discussed improving sleep quality, exercise routine is solid' },
+      { date: 'Sep 12, 2025', type: 'Annual Physical', provider: 'Dr. Chen', summary: 'Meeting activity guidelines, encouraged to continue' }
+    ],
+    labResults: [],
+    complaints: [
+      { date: 'Oct 20, 2025', issue: 'Sleep disruption - waking at 3am, difficulty returning to sleep' },
+      { date: 'Aug 10, 2025', issue: 'Feeling more fatigued than usual' }
+    ],
+    ageRelatedInsights: [
+      {
+        title: 'Sleep Quality Changes',
+        likelihood: 'High',
+        description: 'Up to 60% of perimenopausal women experience sleep disturbances due to night sweats, hormonal fluctuations affecting sleep architecture, and increased stress.',
+        prevention: 'Consistent sleep schedule, cool bedroom (60-67°F), limit caffeine after 2pm, avoid alcohol close to bedtime, regular exercise (but not within 3 hours of bed), relaxation techniques.',
+        management: 'Track sleep patterns and triggers. Cognitive behavioral therapy for insomnia (CBT-I) is highly effective. Hormone therapy may help if night sweats are disrupting sleep. Short-term sleep aids can be discussed if sleep deprivation is severe.'
+      },
+      {
+        title: 'Energy and Fatigue Patterns',
+        likelihood: 'Moderate',
+        description: 'Hormonal changes, sleep disruption, and the demands of this life stage can contribute to increased fatigue.',
+        prevention: 'Prioritize sleep, regular moderate exercise (which paradoxically increases energy), balanced nutrition, stress management, staying socially connected.',
+        management: 'Rule out other causes like thyroid issues, anemia, vitamin deficiencies. Pacing activities, strategic rest, and addressing underlying sleep issues often help. Energy often improves post-menopause.'
+      },
+      {
+        title: 'Exercise Adaptation Needs',
+        likelihood: 'Moderate',
+        description: 'Recovery may take longer, and previous exercise routines might need adjustment during perimenopause.',
+        prevention: 'Mix of activities: aerobic exercise for heart health, strength training for muscle/bone, flexibility work, and rest days for recovery.',
+        management: 'Listen to your body and adjust intensity/volume as needed. Focus on consistency over intensity. Many women find they need more variety and recovery time than they did in their 30s.'
+      }
+    ]
+  }
+};
+
 
 // Reusable Components (defined outside main component)
 const StatusBadge = ({ status, text }) => {
@@ -170,6 +369,7 @@ const Button = ({ children, variant = 'primary', onClick, style = {}, disabled }
 
 export default function PeriHealthApp() {
   const [screen, setScreen] = useState(SCREENS.DASHBOARD);
+  const [selectedHealthSystem, setSelectedHealthSystem] = useState(null);
   const [userConcerns, setUserConcerns] = useState([]);
   const [userQuestions, setUserQuestions] = useState([]);
   const [newConcern, setNewConcern] = useState('');
@@ -249,7 +449,14 @@ export default function PeriHealthApp() {
             <h3 style={{ margin: '0 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Your Health Systems</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               {Object.entries(healthSystems).map(([key, system]) => (
-                <Card key={key} style={{ padding: '14px' }}>
+                <Card 
+                  key={key} 
+                  style={{ padding: '14px', cursor: 'pointer' }}
+                  onClick={() => {
+                    setSelectedHealthSystem(key);
+                    setScreen(SCREENS.HEALTH_SYSTEM_DETAIL);
+                  }}
+                >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
                     <span style={{ fontSize: '24px' }}>{system.icon}</span>
                     <ProgressRing progress={system.completion} color={system.color} size={38} />
@@ -552,6 +759,160 @@ export default function PeriHealthApp() {
             </div>
 
             <p style={{ margin: '16px 0 0', fontSize: '11px', color: colors.textMuted, textAlign: 'center' }}>You can modify this plan at any time. Your preferences are documented.</p>
+          </div>
+        </div>
+      )}
+
+      {screen === SCREENS.HEALTH_SYSTEM_DETAIL && selectedHealthSystem && (
+        <div>
+          <Header 
+            title={healthSystems[selectedHealthSystem].name}
+            subtitle="Your health history and insights"
+            showBack
+            onBack={() => setScreen(SCREENS.DASHBOARD)}
+          />
+          
+          <div style={{ padding: '20px' }}>
+            {/* Current Status Card */}
+            <Card style={{ marginBottom: '16px', background: `linear-gradient(135deg, ${healthSystems[selectedHealthSystem].color}15 0%, ${healthSystems[selectedHealthSystem].color}05 100%)` }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
+                <div style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '50%',
+                  backgroundColor: `${healthSystems[selectedHealthSystem].color}20`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '32px'
+                }}>{healthSystems[selectedHealthSystem].icon}</div>
+                <div style={{ flex: 1 }}>
+                  <h3 style={{ margin: '0 0 4px', fontSize: '16px', color: colors.text }}>Current Status</h3>
+                  <StatusBadge status={healthSystems[selectedHealthSystem].status} text={healthSystems[selectedHealthSystem].statusText} />
+                </div>
+                <ProgressRing progress={healthSystems[selectedHealthSystem].completion} color={healthSystems[selectedHealthSystem].color} size={52} />
+              </div>
+            </Card>
+
+            {/* Recent Lab Results */}
+            {healthSystemDetails[selectedHealthSystem].labResults.length > 0 && (
+              <>
+                <h3 style={{ margin: '20px 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Recent Lab Results</h3>
+                {healthSystemDetails[selectedHealthSystem].labResults.map((lab, i) => (
+                  <Card key={i} style={{ marginBottom: '10px', padding: '14px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                      <div>
+                        <h4 style={{ margin: '0 0 2px', fontSize: '14px', color: colors.text, fontWeight: '600' }}>{lab.test}</h4>
+                        <p style={{ margin: 0, fontSize: '12px', color: colors.textMuted }}>{lab.date}</p>
+                      </div>
+                      <StatusBadge status={lab.status} text={lab.range} />
+                    </div>
+                    <p style={{ margin: '8px 0 0', fontSize: '16px', color: colors.text, fontWeight: '600' }}>{lab.value}</p>
+                  </Card>
+                ))}
+              </>
+            )}
+
+            {/* Recent Visits */}
+            {healthSystemDetails[selectedHealthSystem].recentVisits.length > 0 && (
+              <>
+                <h3 style={{ margin: '20px 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Recent Visits</h3>
+                {healthSystemDetails[selectedHealthSystem].recentVisits.map((visit, i) => (
+                  <Card key={i} style={{ marginBottom: '10px', padding: '14px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                      <div>
+                        <h4 style={{ margin: '0 0 2px', fontSize: '14px', color: colors.text, fontWeight: '600' }}>{visit.type}</h4>
+                        <p style={{ margin: 0, fontSize: '12px', color: colors.textMuted }}>{visit.provider} • {visit.date}</p>
+                      </div>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '13px', color: colors.text, lineHeight: '1.5' }}>{visit.summary}</p>
+                  </Card>
+                ))}
+              </>
+            )}
+
+            {/* Past Complaints */}
+            {healthSystemDetails[selectedHealthSystem].complaints.length > 0 && (
+              <>
+                <h3 style={{ margin: '20px 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>History of Concerns</h3>
+                {healthSystemDetails[selectedHealthSystem].complaints.map((complaint, i) => (
+                  <Card key={i} style={{ marginBottom: '10px', padding: '12px 14px' }}>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <span style={{ color: colors.textMuted, fontSize: '12px', minWidth: '80px' }}>{complaint.date}</span>
+                      <p style={{ margin: 0, fontSize: '13px', color: colors.text }}>{complaint.issue}</p>
+                    </div>
+                  </Card>
+                ))}
+              </>
+            )}
+
+            {/* Age-Related Insights */}
+            <h3 style={{ margin: '20px 0 8px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Health Insights for You</h3>
+            <p style={{ margin: '0 0 16px', fontSize: '13px', color: colors.textMuted }}>
+              Based on your age and health profile, here are some conditions to be aware of and how you can stay healthy.
+            </p>
+
+            {healthSystemDetails[selectedHealthSystem].ageRelatedInsights.map((insight, i) => (
+              <Card key={i} style={{ marginBottom: '16px', border: `1px solid ${colors.border}` }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                  <h4 style={{ margin: 0, fontSize: '15px', color: colors.text, fontWeight: '600' }}>{insight.title}</h4>
+                  <span style={{
+                    padding: '4px 10px',
+                    borderRadius: '12px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    backgroundColor: insight.likelihood.includes('High') ? `${colors.warning}15` : 
+                                    insight.likelihood.includes('Moderate') ? `${colors.accent}15` : 
+                                    `${colors.primary}15`,
+                    color: insight.likelihood.includes('High') ? colors.warning : 
+                           insight.likelihood.includes('Moderate') ? colors.accent : 
+                           colors.primary
+                  }}>
+                    {insight.likelihood} likelihood
+                  </span>
+                </div>
+
+                <div style={{ 
+                  padding: '12px', 
+                  backgroundColor: `${colors.primary}08`, 
+                  borderRadius: '8px', 
+                  marginBottom: '12px',
+                  borderLeft: `3px solid ${colors.primary}`
+                }}>
+                  <p style={{ margin: 0, fontSize: '13px', color: colors.text, lineHeight: '1.6' }}>
+                    <strong>What this means:</strong> {insight.description}
+                  </p>
+                </div>
+
+                <div style={{ marginBottom: '12px' }}>
+                  <p style={{ margin: '0 0 6px', fontSize: '12px', color: colors.success, fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    ✓ How to reduce your risk
+                  </p>
+                  <p style={{ margin: 0, fontSize: '13px', color: colors.text, lineHeight: '1.6' }}>
+                    {insight.prevention}
+                  </p>
+                </div>
+
+                <div>
+                  <p style={{ margin: '0 0 6px', fontSize: '12px', color: colors.primary, fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    → Best practices for managing
+                  </p>
+                  <p style={{ margin: 0, fontSize: '13px', color: colors.text, lineHeight: '1.6' }}>
+                    {insight.management}
+                  </p>
+                </div>
+              </Card>
+            ))}
+
+            {/* Action Buttons */}
+            <div style={{ marginTop: '24px', display: 'flex', gap: '12px' }}>
+              <Button variant="outline" style={{ flex: 1 }}>📨 Message Dr. Chen</Button>
+              <Button variant="accent" style={{ flex: 1 }}>📆 Schedule Visit</Button>
+            </div>
+
+            <p style={{ margin: '16px 0 0', fontSize: '11px', color: colors.textMuted, textAlign: 'center' }}>
+              Have questions about these insights? Your care team is here to help.
+            </p>
           </div>
         </div>
       )}
