@@ -59,20 +59,60 @@ const SCREENS = {
 const healthSystemDetails = {
   hormones: {
     recentVisits: [
-      { date: 'Nov 15, 2025', type: 'Lab Results', provider: 'Dr. Chen', summary: 'Hormone panel showed declining estrogen/progesterone trend' },
-      { date: 'Aug 10, 2025', type: 'Office Visit', provider: 'Dr. Chen', summary: 'Discussed cycle irregularity, ordered comprehensive hormone panel' },
-      { date: 'May 3, 2025', type: 'Lab Results', provider: 'Dr. Chen', summary: 'FSH levels within normal range for age' }
+      { date: 'Nov 15, 2025', type: 'Lab Results', provider: 'Quest Diagnostics', summary: 'Hormone panel showed declining estrogen/progesterone trend' },
+      { date: 'Aug 10, 2025', type: 'Annual Exam', provider: 'Dr. Chen', summary: 'Discussed cycle irregularity, ordered comprehensive hormone panel' },
+      { date: 'May 3, 2025', type: 'Lab Results', provider: 'Quest Diagnostics', summary: 'FSH levels within normal range for age' }
     ],
     labResults: [
-      { test: 'Estradiol', value: '95 pg/mL', date: 'Nov 15, 2025', range: 'Normal (declining trend)', status: 'insight' },
-      { test: 'Progesterone', value: '5 ng/mL', date: 'Nov 15, 2025', range: 'Normal (declining trend)', status: 'insight' },
-      { test: 'FSH', value: '28 mIU/mL', date: 'Aug 10, 2025', range: 'Elevated (perimenopause range)', status: 'insight' },
-      { test: 'TSH', value: '2.1 mIU/L', date: 'Aug 10, 2025', range: 'Normal', status: 'good' }
+      { 
+        test: 'Estradiol', 
+        value: '95 pg/mL', 
+        date: 'Nov 15, 2025', 
+        populationRange: '15-350 pg/mL (premenopausal)', 
+        yourBaseline: '140-160 pg/mL (your typical range)',
+        status: 'insight',
+        interpretation: 'While still within normal population range, this is notably lower than your personal baseline. The 6-month declining trend may explain recent symptoms.'
+      },
+      { 
+        test: 'Progesterone', 
+        value: '5 ng/mL', 
+        date: 'Nov 15, 2025', 
+        populationRange: '5-20 ng/mL (luteal phase)', 
+        yourBaseline: '10-14 ng/mL (your typical)',
+        status: 'insight',
+        interpretation: 'Lower end of normal range and below your usual levels. Consistent with perimenopause transition.'
+      },
+      { 
+        test: 'FSH', 
+        value: '28 mIU/mL', 
+        date: 'Aug 10, 2025', 
+        populationRange: '25-134 mIU/mL (perimenopause)', 
+        yourBaseline: 'First measurement at this level',
+        status: 'insight',
+        interpretation: 'Elevated compared to reproductive years (normal <10), consistent with perimenopause. We\'ll track this over time to establish your pattern.'
+      },
+      { 
+        test: 'TSH', 
+        value: '2.1 mIU/L', 
+        date: 'Aug 10, 2025', 
+        populationRange: '0.4-4.0 mIU/L', 
+        yourBaseline: '2.0-2.3 mIU/L (stable for 5 years)',
+        status: 'good',
+        interpretation: 'Right in your normal range. Thyroid function stable and not contributing to symptoms.'
+      }
     ],
     complaints: [
       { date: 'Aug 10, 2025', issue: 'Irregular cycles - varying from 24-38 days' },
       { date: 'Aug 10, 2025', issue: 'Night sweats 2-3x per week' },
       { date: 'May 3, 2025', issue: 'Brain fog and difficulty concentrating' }
+    ],
+    aiInsights: [
+      {
+        type: 'pattern',
+        title: 'Cross-System Pattern Detected',
+        description: 'Your reported sleep disruptions (Activity system) began around the same time as hormone level changes. Night sweats may be interrupting sleep architecture, contributing to daytime fatigue and brain fog.',
+        action: 'Addressing vasomotor symptoms may improve sleep quality and cognitive function simultaneously.'
+      }
     ],
     ageRelatedInsights: [
       {
@@ -93,17 +133,57 @@ const healthSystemDetails = {
   },
   mindbody: {
     recentVisits: [
-      { date: 'Oct 20, 2025', type: 'Office Visit', provider: 'Dr. Chen', summary: 'Check-in on mood symptoms, sleep quality stable' },
-      { date: 'Jun 5, 2025', type: 'Lab Results', provider: 'Dr. Chen', summary: 'Thyroid and B12 levels normal' }
+      { date: 'Oct 20, 2025', type: 'Telehealth Visit', provider: 'Dr. Chen', summary: 'Check-in on mood symptoms, sleep quality stable' },
+      { date: 'Jun 5, 2025', type: 'Lab Results', provider: 'LabCorp', summary: 'Thyroid and B12 levels normal' },
+      { date: 'Feb 12, 2025', type: 'Therapy Session', provider: 'Lisa Morrison, LCSW', summary: 'CBT session focused on stress management techniques' }
     ],
     labResults: [
-      { test: 'Vitamin B12', value: '485 pg/mL', date: 'Jun 5, 2025', range: 'Normal', status: 'good' },
-      { test: 'Vitamin D', value: '38 ng/mL', date: 'Jun 5, 2025', range: 'Adequate', status: 'good' },
-      { test: 'TSH', value: '2.1 mIU/L', date: 'Jun 5, 2025', range: 'Normal', status: 'good' }
+      { 
+        test: 'Vitamin B12', 
+        value: '485 pg/mL', 
+        date: 'Jun 5, 2025', 
+        populationRange: '200-900 pg/mL', 
+        yourBaseline: '450-520 pg/mL (consistent)',
+        status: 'good',
+        interpretation: 'Right in your typical range. B12 levels are stable and adequate for cognitive function.'
+      },
+      { 
+        test: 'Vitamin D', 
+        value: '38 ng/mL', 
+        date: 'Jun 5, 2025', 
+        populationRange: '30-100 ng/mL', 
+        yourBaseline: '35-42 ng/mL (with supplementation)',
+        status: 'good',
+        interpretation: 'Maintaining adequate levels with current supplementation strategy. Continue current dose.'
+      },
+      { 
+        test: 'TSH', 
+        value: '2.1 mIU/L', 
+        date: 'Jun 5, 2025', 
+        populationRange: '0.4-4.0 mIU/L', 
+        yourBaseline: '2.0-2.3 mIU/L',
+        status: 'good',
+        interpretation: 'Stable and in your normal range. Thyroid not contributing to mood or cognitive symptoms.'
+      }
     ],
     complaints: [
       { date: 'Oct 20, 2025', issue: 'Occasional anxiety, particularly around cycle' },
-      { date: 'Aug 10, 2025', issue: 'Increased irritability and emotional sensitivity' }
+      { date: 'Aug 10, 2025', issue: 'Increased irritability and emotional sensitivity' },
+      { date: 'Feb 12, 2025', issue: 'Work stress affecting mood and sleep' }
+    ],
+    aiInsights: [
+      {
+        type: 'pattern',
+        title: 'Cyclical Mood Pattern',
+        description: 'Your anxiety and irritability reports consistently occur in the luteal phase of your cycle (days 18-28), when progesterone should be highest but is currently lower than your baseline.',
+        action: 'This hormonal link suggests mood symptoms may improve with hormone stabilization. Track mood alongside cycle to confirm pattern.'
+      },
+      {
+        type: 'connection',
+        title: 'Multi-System Connection',
+        description: 'Brain fog (reported in Hormone system) overlaps with periods of poor sleep (Activity system). Sleep disruption from night sweats may be affecting cognitive function and mood resilience.',
+        action: 'Improving sleep quality through vasomotor symptom management may have cascading benefits for mood and cognition.'
+      }
     ],
     ageRelatedInsights: [
       {
@@ -124,46 +204,139 @@ const healthSystemDetails = {
   },
   cardiovascular: {
     recentVisits: [
-      { date: 'Sep 12, 2025', type: 'Annual Physical', provider: 'Dr. Chen', summary: 'BP stable, cholesterol screening ordered' },
-      { date: 'Sep 12, 2025', type: 'Lab Results', provider: 'Dr. Chen', summary: 'Lipid panel within normal limits' }
+      { date: 'Nov 15, 2025', type: 'Routine Blood Pressure Check', provider: 'Dr. Chen (in-office)', summary: 'BP stable at 118/76 - consistent with baseline' },
+      { date: 'Sep 12, 2025', type: 'Annual Physical', provider: 'Dr. Chen', summary: 'Comprehensive metabolic panel and lipids ordered' },
+      { date: 'Sep 12, 2025', type: 'Lab Results', provider: 'Quest Diagnostics', summary: 'Lipid panel within normal limits' },
+      { date: 'Mar 22, 2025', type: 'Urgent Care Visit', provider: 'Dr. Patel', summary: 'Respiratory infection - BP noted as 122/78 (normal)' }
     ],
     labResults: [
-      { test: 'Total Cholesterol', value: '185 mg/dL', date: 'Sep 12, 2025', range: 'Desirable (<200)', status: 'good' },
-      { test: 'LDL', value: '105 mg/dL', date: 'Sep 12, 2025', range: 'Near optimal (<130)', status: 'good' },
-      { test: 'HDL', value: '62 mg/dL', date: 'Sep 12, 2025', range: 'Protective (>60)', status: 'good' },
-      { test: 'Triglycerides', value: '90 mg/dL', date: 'Sep 12, 2025', range: 'Normal (<150)', status: 'good' },
-      { test: 'Blood Pressure', value: '118/76 mmHg', date: 'Nov 15, 2025', range: 'Normal', status: 'good' }
+      { 
+        test: 'Total Cholesterol', 
+        value: '185 mg/dL', 
+        date: 'Sep 12, 2025', 
+        populationRange: '<200 mg/dL desirable', 
+        yourBaseline: '175-190 mg/dL (stable)',
+        status: 'good',
+        interpretation: 'Excellent and stable. No change needed in current diet/exercise routine.'
+      },
+      { 
+        test: 'LDL (Bad Cholesterol)', 
+        value: '105 mg/dL', 
+        date: 'Sep 12, 2025', 
+        populationRange: '<130 mg/dL near optimal', 
+        yourBaseline: '95-110 mg/dL',
+        status: 'good',
+        interpretation: 'In your typical range and well-controlled. Continue current lifestyle habits.'
+      },
+      { 
+        test: 'HDL (Good Cholesterol)', 
+        value: '62 mg/dL', 
+        date: 'Sep 12, 2025', 
+        populationRange: '>60 mg/dL protective', 
+        yourBaseline: '58-65 mg/dL',
+        status: 'good',
+        interpretation: 'Protective level maintained through regular exercise. Keep up current activity level.'
+      },
+      { 
+        test: 'Triglycerides', 
+        value: '90 mg/dL', 
+        date: 'Sep 12, 2025', 
+        populationRange: '<150 mg/dL normal', 
+        yourBaseline: '85-105 mg/dL',
+        status: 'good',
+        interpretation: 'Well within your normal range. Diet and exercise routine working well.'
+      },
+      { 
+        test: 'Resting Heart Rate', 
+        value: '52 bpm', 
+        date: 'Nov 15, 2025', 
+        populationRange: '60-100 bpm', 
+        yourBaseline: '48-54 bpm (athletic baseline)',
+        status: 'good',
+        interpretation: 'Below population "normal" but this is YOUR normal due to regular aerobic exercise over 20+ years. This indicates excellent cardiovascular fitness. A rise to 65-70 bpm would be worth investigating for YOU.'
+      },
+      { 
+        test: 'Blood Pressure', 
+        value: '118/76 mmHg', 
+        date: 'Nov 15, 2025', 
+        populationRange: '<120/80 mmHg normal', 
+        yourBaseline: '115/72 - 122/78 mmHg',
+        status: 'good',
+        interpretation: 'Stable in your typical range. Continue monitoring as you move through perimenopause, as BP can increase with hormonal changes.'
+      }
     ],
     complaints: [],
+    aiInsights: [
+      {
+        type: 'protective',
+        title: 'Strong Cardiovascular Foundation',
+        description: 'Your athletic baseline (HR 48-54 bpm, stable lipids) indicates excellent cardiovascular fitness from long-term exercise habits. This protective effect is especially valuable as you transition through perimenopause.',
+        action: 'Maintain current activity level. Your exercise routine is providing significant protective benefit against age-related cardiovascular changes.'
+      }
+    ],
     ageRelatedInsights: [
       {
         title: 'Cardiovascular Risk After Menopause',
         likelihood: 'Moderate (Future)',
         description: 'Estrogen provides cardiovascular protection. As levels decline through menopause, heart disease risk increases, eventually matching men\'s risk by age 70.',
         prevention: 'Regular aerobic exercise (150 min/week), maintaining healthy weight, not smoking, managing stress, eating a Mediterranean-style diet rich in fruits, vegetables, whole grains, and healthy fats.',
-        management: 'Annual lipid screening, blood pressure monitoring, and discussing cardiovascular risk assessment with your provider. Some women may benefit from low-dose aspirin or statins based on individual risk factors.'
+        management: 'Annual lipid screening, blood pressure monitoring, and discussing cardiovascular risk assessment with your provider. Some women may benefit from low-dose aspirin or statins based on individual risk factors. Your current exercise routine provides significant protection.'
       },
       {
         title: 'Blood Pressure Changes',
         likelihood: 'Moderate',
         description: 'Women often see blood pressure increase during and after menopause due to hormonal changes and aging of blood vessels.',
         prevention: 'Limit sodium intake (<2300mg/day), maintain healthy weight, regular exercise, limit alcohol, and manage stress.',
-        management: 'Home blood pressure monitoring can help track trends. Early intervention with lifestyle changes or medication prevents complications.'
+        management: 'Home blood pressure monitoring can help track trends. For you, watch for readings consistently above 125/80, which would be outside YOUR normal range. Early intervention with lifestyle changes or medication prevents complications.'
       }
     ]
   },
   musculoskeletal: {
     recentVisits: [
-      { date: 'Nov 1, 2025', type: 'Office Visit', provider: 'Dr. Chen', summary: 'Reported increased joint stiffness in mornings' },
-      { date: 'Sep 12, 2025', type: 'Lab Results', provider: 'Dr. Chen', summary: 'Vitamin D adequate, considering bone density scan' }
+      { date: 'Nov 1, 2025', type: 'Office Visit', provider: 'Dr. Chen', summary: 'Reported increased joint stiffness in mornings, especially hands' },
+      { date: 'Oct 8, 2025', type: 'Physical Therapy', provider: 'Alex Rivera, PT', summary: 'Evaluation for knee pain, started strengthening program' },
+      { date: 'Sep 12, 2025', type: 'Annual Physical', provider: 'Dr. Chen', summary: 'Discussed bone health, vitamin D adequate, considering DEXA scan' },
+      { date: 'Jul 18, 2025', type: 'Orthopedic Consult', provider: 'Dr. Martinez', summary: 'Left knee pain - no structural damage, recommended PT and weight management' }
     ],
     labResults: [
-      { test: 'Vitamin D', value: '38 ng/mL', date: 'Sep 12, 2025', range: 'Adequate (>30)', status: 'good' },
-      { test: 'Calcium', value: '9.4 mg/dL', date: 'Sep 12, 2025', range: 'Normal', status: 'good' }
+      { 
+        test: 'Vitamin D', 
+        value: '38 ng/mL', 
+        date: 'Sep 12, 2025', 
+        populationRange: '30-100 ng/mL', 
+        yourBaseline: '35-42 ng/mL (with 2000 IU daily)',
+        status: 'good',
+        interpretation: 'Optimal for bone health. Current supplementation dose is working well.'
+      },
+      { 
+        test: 'Calcium', 
+        value: '9.4 mg/dL', 
+        date: 'Sep 12, 2025', 
+        populationRange: '8.5-10.2 mg/dL', 
+        yourBaseline: '9.2-9.6 mg/dL',
+        status: 'good',
+        interpretation: 'Stable in your normal range. Dietary calcium intake appears adequate.'
+      }
     ],
     complaints: [
-      { date: 'Nov 1, 2025', issue: 'Joint stiffness in hands and knees, especially in morning' },
-      { date: 'Aug 10, 2025', issue: 'Occasional lower back discomfort' }
+      { date: 'Nov 1, 2025', issue: 'Joint stiffness in hands and knees, especially in morning (new within 3 months)' },
+      { date: 'Oct 8, 2025', issue: 'Left knee pain with stairs and after sitting (ongoing 6 months)' },
+      { date: 'Aug 10, 2025', issue: 'Occasional lower back discomfort' },
+      { date: 'Jul 18, 2025', issue: 'Knee pain worsened, difficulty with exercise' }
+    ],
+    aiInsights: [
+      {
+        type: 'pattern',
+        title: 'Timeline Correlation Detected',
+        description: 'Your joint stiffness complaints began ~3 months ago (August), coinciding with: (1) documented decline in estrogen levels, (2) reduced exercise frequency due to knee pain, and (3) reported 8-lb weight gain (noted in PT visit).',
+        action: 'Multiple factors may be contributing: hormonal changes can cause joint inflammation, reduced activity affects joint health, and increased weight adds stress to weight-bearing joints. A multi-pronged approach addressing all three may be most effective.'
+      },
+      {
+        type: 'connection',
+        title: 'Exercise-Pain Cycle',
+        description: 'PT notes indicate knee pain led to reduced walking/exercise → weight gain → increased knee stress → more pain. Breaking this cycle is important for both joint and overall health.',
+        action: 'PT-guided low-impact exercise (swimming, cycling, gentle yoga) can maintain activity without aggravating knee pain. This supports weight management and joint mobility.'
+      }
     ],
     ageRelatedInsights: [
       {
@@ -171,33 +344,51 @@ const healthSystemDetails = {
         likelihood: 'High',
         description: 'Estrogen decline during perimenopause and menopause accelerates bone loss. Women can lose up to 20% of bone density in the 5-7 years after menopause.',
         prevention: 'Weight-bearing exercise (walking, dancing, strength training) 3-4x/week, adequate calcium (1200mg/day from food and supplements), vitamin D (800-1000 IU/day), avoid smoking and excessive alcohol.',
-        management: 'Baseline DEXA scan recommended at age 65 (or earlier if risk factors present). Some women benefit from earlier screening. Medications like bisphosphonates are available if bone loss is significant.'
+        management: 'Baseline DEXA scan recommended now (age 45+  with declining estrogen) rather than waiting until 65. Early measurement establishes your baseline and guides prevention strategies. Medications like bisphosphonates are available if bone loss is significant.'
       },
       {
         title: 'Joint Health and Arthritis',
-        likelihood: 'Moderate',
-        description: 'Hormonal changes can affect joint health. Many women first experience joint pain and stiffness during perimenopause.',
+        likelihood: 'Moderate to High',
+        description: 'Hormonal changes can affect joint health. Many women first experience joint pain and stiffness during perimenopause. The timing of your symptoms suggests a hormonal component.',
         prevention: 'Maintain healthy weight (reduces stress on joints), low-impact exercise (swimming, cycling, yoga), anti-inflammatory diet rich in omega-3 fatty acids.',
-        management: 'Distinguish between hormonal joint pain and osteoarthritis through physical exam. Anti-inflammatory strategies, physical therapy, and sometimes hormone therapy can help. Regular movement prevents stiffness.'
+        management: 'Distinguish between hormonal joint pain and osteoarthritis through physical exam and possibly imaging if symptoms persist. Anti-inflammatory strategies, physical therapy, and sometimes hormone therapy can help. Regular movement prevents stiffness. Some women find joint symptoms improve significantly with HRT.'
       },
       {
         title: 'Muscle Mass Changes',
         likelihood: 'Moderate',
         description: 'Declining estrogen and natural aging contribute to gradual muscle loss (sarcopenia), affecting strength and metabolism.',
         prevention: 'Resistance training 2-3x/week, adequate protein intake (1.0-1.2g per kg body weight), staying active throughout the day.',
-        management: 'Strength training is the most effective intervention. Working with a physical therapist or trainer can help develop a safe, effective program.'
+        management: 'Strength training is the most effective intervention. Working with your PT Alex to develop a knee-friendly strength program can help maintain muscle mass while protecting your joint.'
       }
     ]
   },
   digestion: {
     recentVisits: [
-      { date: 'Sep 12, 2025', type: 'Annual Physical', provider: 'Dr. Chen', summary: 'Digestive health stable, no concerns reported' }
+      { date: 'Sep 12, 2025', type: 'Annual Physical', provider: 'Dr. Chen', summary: 'Digestive health stable, no concerns reported' },
+      { date: 'Jan 8, 2025', type: 'Urgent Care', provider: 'Dr. Lee', summary: 'Stomach flu - resolved with supportive care' }
     ],
     labResults: [
-      { test: 'H. pylori', value: 'Negative', date: 'Mar 15, 2024', range: 'Normal', status: 'good' }
+      { 
+        test: 'H. pylori Antibody', 
+        value: 'Negative', 
+        date: 'Mar 15, 2024', 
+        populationRange: 'Negative', 
+        yourBaseline: 'Negative (tested once)',
+        status: 'good',
+        interpretation: 'No evidence of H. pylori infection, which can cause ulcers and gastritis.'
+      }
     ],
     complaints: [
-      { date: 'May 3, 2025', issue: 'Occasional bloating, seems worse before period' }
+      { date: 'May 3, 2025', issue: 'Occasional bloating, seems worse before period' },
+      { date: 'Jan 8, 2025', issue: 'Acute gastroenteritis symptoms' }
+    ],
+    aiInsights: [
+      {
+        type: 'pattern',
+        title: 'Hormonal Digestive Pattern',
+        description: 'Bloating reports correlate with luteal phase (pre-menstrual), when progesterone peaks. Progesterone slows gut motility, which can cause bloating and constipation.',
+        action: 'This cyclical pattern is hormonally-driven. Tracking symptoms with cycle can help predict and manage. Symptoms may improve as you transition through menopause and cycles become less regular.'
+      }
     ],
     ageRelatedInsights: [
       {
@@ -218,13 +409,29 @@ const healthSystemDetails = {
   },
   activity: {
     recentVisits: [
-      { date: 'Oct 20, 2025', type: 'Office Visit', provider: 'Dr. Chen', summary: 'Discussed improving sleep quality, exercise routine is solid' },
-      { date: 'Sep 12, 2025', type: 'Annual Physical', provider: 'Dr. Chen', summary: 'Meeting activity guidelines, encouraged to continue' }
+      { date: 'Oct 20, 2025', type: 'Telehealth Visit', provider: 'Dr. Chen', summary: 'Discussed sleep disruption strategies, exercise routine modified due to knee pain' },
+      { date: 'Oct 8, 2025', type: 'Physical Therapy', provider: 'Alex Rivera, PT', summary: 'Noted reduced activity over past 6 months due to knee pain, weight up 8 lbs' },
+      { date: 'Sep 12, 2025', type: 'Annual Physical', provider: 'Dr. Chen', summary: 'Was meeting activity guidelines before knee injury, encouraged modified activities' }
     ],
     labResults: [],
     complaints: [
-      { date: 'Oct 20, 2025', issue: 'Sleep disruption - waking at 3am, difficulty returning to sleep' },
-      { date: 'Aug 10, 2025', issue: 'Feeling more fatigued than usual' }
+      { date: 'Oct 20, 2025', issue: 'Sleep disruption - waking at 3am almost nightly, difficulty returning to sleep' },
+      { date: 'Aug 10, 2025', issue: 'Feeling more fatigued than usual, hard to motivate for exercise' },
+      { date: 'Jul 18, 2025', issue: 'Reduced exercise due to knee pain' }
+    ],
+    aiInsights: [
+      {
+        type: 'pattern',
+        title: 'Sleep-Hormone-Activity Triangle',
+        description: 'Three interconnected issues emerged simultaneously: (1) Night sweats disrupting sleep at 3am (Hormone system), (2) Declining estrogen (Hormone labs), and (3) Daytime fatigue reducing exercise motivation. Each affects the others.',
+        action: 'Addressing vasomotor symptoms (night sweats) may be the key leverage point - better sleep could improve energy for exercise, and more activity can help sleep quality. This is a cycle worth breaking at the hormone level.'
+      },
+      {
+        type: 'connection',
+        title: 'Knee Pain Cascade Effect',
+        description: 'Knee pain (July) → reduced activity → weight gain (8 lbs over 6 months per PT notes) → more knee stress + sleep disruption from night sweats → fatigue → less exercise motivation. Multiple systems affected.',
+        action: 'Low-impact exercise alternatives (swimming, cycling, water aerobics) can maintain activity without worsening knee pain. PT working on knee strength. Breaking the inactivity cycle is important for sleep, mood, weight, and joint health.'
+      }
     ],
     ageRelatedInsights: [
       {
@@ -232,21 +439,21 @@ const healthSystemDetails = {
         likelihood: 'High',
         description: 'Up to 60% of perimenopausal women experience sleep disturbances due to night sweats, hormonal fluctuations affecting sleep architecture, and increased stress.',
         prevention: 'Consistent sleep schedule, cool bedroom (60-67°F), limit caffeine after 2pm, avoid alcohol close to bedtime, regular exercise (but not within 3 hours of bed), relaxation techniques.',
-        management: 'Track sleep patterns and triggers. Cognitive behavioral therapy for insomnia (CBT-I) is highly effective. Hormone therapy may help if night sweats are disrupting sleep. Short-term sleep aids can be discussed if sleep deprivation is severe.'
+        management: 'Track sleep patterns and triggers. Cognitive behavioral therapy for insomnia (CBT-I) is highly effective. Hormone therapy may help if night sweats are disrupting sleep - this may be worth discussing given your pattern. Short-term sleep aids can be discussed if sleep deprivation is severe.'
       },
       {
         title: 'Energy and Fatigue Patterns',
         likelihood: 'Moderate',
         description: 'Hormonal changes, sleep disruption, and the demands of this life stage can contribute to increased fatigue.',
         prevention: 'Prioritize sleep, regular moderate exercise (which paradoxically increases energy), balanced nutrition, stress management, staying socially connected.',
-        management: 'Rule out other causes like thyroid issues, anemia, vitamin deficiencies. Pacing activities, strategic rest, and addressing underlying sleep issues often help. Energy often improves post-menopause.'
+        management: 'Rule out other causes like thyroid issues, anemia, vitamin deficiencies (your labs look good). Pacing activities, strategic rest, and addressing underlying sleep issues often help. Energy often improves post-menopause.'
       },
       {
         title: 'Exercise Adaptation Needs',
         likelihood: 'Moderate',
         description: 'Recovery may take longer, and previous exercise routines might need adjustment during perimenopause.',
         prevention: 'Mix of activities: aerobic exercise for heart health, strength training for muscle/bone, flexibility work, and rest days for recovery.',
-        management: 'Listen to your body and adjust intensity/volume as needed. Focus on consistency over intensity. Many women find they need more variety and recovery time than they did in their 30s.'
+        management: 'Listen to your body and adjust intensity/volume as needed. Focus on consistency over intensity. Your knee situation is pushing this adaptation. Work with PT to find sustainable alternatives that keep you active without pain.'
       }
     ]
   }
@@ -799,15 +1006,32 @@ export default function PeriHealthApp() {
               <>
                 <h3 style={{ margin: '20px 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Recent Lab Results</h3>
                 {healthSystemDetails[selectedHealthSystem].labResults.map((lab, i) => (
-                  <Card key={i} style={{ marginBottom: '10px', padding: '14px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                  <Card key={i} style={{ marginBottom: '12px', padding: '14px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                       <div>
                         <h4 style={{ margin: '0 0 2px', fontSize: '14px', color: colors.text, fontWeight: '600' }}>{lab.test}</h4>
                         <p style={{ margin: 0, fontSize: '12px', color: colors.textMuted }}>{lab.date}</p>
                       </div>
-                      <StatusBadge status={lab.status} text={lab.range} />
+                      <StatusBadge status={lab.status} text={lab.status === 'good' ? 'In range' : 'Insight'} />
                     </div>
-                    <p style={{ margin: '8px 0 0', fontSize: '16px', color: colors.text, fontWeight: '600' }}>{lab.value}</p>
+                    <p style={{ margin: '8px 0 0', fontSize: '18px', color: colors.text, fontWeight: '600' }}>{lab.value}</p>
+                    
+                    <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                        <span style={{ fontSize: '11px', color: colors.textMuted, minWidth: '80px' }}>Population:</span>
+                        <span style={{ fontSize: '12px', color: colors.text }}>{lab.populationRange}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                        <span style={{ fontSize: '11px', color: colors.primary, fontWeight: '600', minWidth: '80px' }}>Your Normal:</span>
+                        <span style={{ fontSize: '12px', color: colors.text, fontWeight: '500' }}>{lab.yourBaseline}</span>
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: '10px', padding: '10px', backgroundColor: `${colors.primary}08`, borderRadius: '8px', borderLeft: `3px solid ${lab.status === 'good' ? colors.success : colors.accent}` }}>
+                      <p style={{ margin: 0, fontSize: '12px', color: colors.text, lineHeight: '1.5' }}>
+                        <strong>What this means for you:</strong> {lab.interpretation}
+                      </p>
+                    </div>
                   </Card>
                 ))}
               </>
@@ -840,6 +1064,67 @@ export default function PeriHealthApp() {
                     <div style={{ display: 'flex', gap: '10px' }}>
                       <span style={{ color: colors.textMuted, fontSize: '12px', minWidth: '80px' }}>{complaint.date}</span>
                       <p style={{ margin: 0, fontSize: '13px', color: colors.text }}>{complaint.issue}</p>
+                    </div>
+                  </Card>
+                ))}
+              </>
+            )}
+
+            {/* AI-Powered Pattern Insights */}
+            {healthSystemDetails[selectedHealthSystem].aiInsights && healthSystemDetails[selectedHealthSystem].aiInsights.length > 0 && (
+              <>
+                <h3 style={{ margin: '20px 0 8px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>
+                  <span style={{ marginRight: '8px' }}>✨</span>
+                  Patterns We've Noticed
+                </h3>
+                <p style={{ margin: '0 0 16px', fontSize: '13px', color: colors.textMuted }}>
+                  AI-assisted analysis connecting your health data across visits and systems
+                </p>
+
+                {healthSystemDetails[selectedHealthSystem].aiInsights.map((insight, i) => (
+                  <Card key={i} style={{ 
+                    marginBottom: '16px', 
+                    border: `2px solid ${insight.type === 'protective' ? colors.success : colors.accent}`,
+                    background: `linear-gradient(135deg, ${insight.type === 'protective' ? colors.success : colors.accent}08 0%, ${insight.type === 'protective' ? colors.success : colors.accent}02 100%)`
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '10px' }}>
+                      <span style={{ fontSize: '20px' }}>
+                        {insight.type === 'pattern' ? '🔍' : insight.type === 'connection' ? '🔗' : '🛡️'}
+                      </span>
+                      <div style={{ flex: 1 }}>
+                        <h4 style={{ margin: '0 0 2px', fontSize: '14px', color: colors.text, fontWeight: '600' }}>{insight.title}</h4>
+                        <span style={{ 
+                          fontSize: '10px', 
+                          color: insight.type === 'protective' ? colors.success : colors.accent,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          fontWeight: '600'
+                        }}>
+                          {insight.type === 'pattern' ? 'Pattern detected' : insight.type === 'connection' ? 'Cross-system connection' : 'Protective factor'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div style={{ 
+                      padding: '12px', 
+                      backgroundColor: 'white', 
+                      borderRadius: '8px', 
+                      marginBottom: '10px'
+                    }}>
+                      <p style={{ margin: 0, fontSize: '13px', color: colors.text, lineHeight: '1.6' }}>
+                        {insight.description}
+                      </p>
+                    </div>
+
+                    <div style={{ 
+                      padding: '10px 12px', 
+                      backgroundColor: `${insight.type === 'protective' ? colors.success : colors.primary}10`, 
+                      borderRadius: '8px',
+                      borderLeft: `3px solid ${insight.type === 'protective' ? colors.success : colors.primary}`
+                    }}>
+                      <p style={{ margin: 0, fontSize: '12px', color: colors.text, lineHeight: '1.5' }}>
+                        <strong>Recommendation:</strong> {insight.action}
+                      </p>
                     </div>
                   </Card>
                 ))}
