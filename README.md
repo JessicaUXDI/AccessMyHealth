@@ -1,4 +1,4 @@
-# PeriHealth - Women's Health Partner
+# MyAccess - Health Partner
 
 A patient-centered health tracking application demonstrating AI-assisted healthcare insights and personalized baseline tracking.
 
