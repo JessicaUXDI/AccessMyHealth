@@ -52,7 +52,9 @@ const SCREENS = {
   ADD_CONCERNS: 'add_concerns',
   DIAGNOSIS_PREVIEW: 'diagnosis_preview',
   PLAN_OF_CARE: 'plan_of_care',
-  HEALTH_SYSTEM_DETAIL: 'health_system_detail'
+  HEALTH_SYSTEM_DETAIL: 'health_system_detail',
+  SYMPTOM_INTAKE: 'symptom_intake',
+  GENERATE_DIAGNOSIS: 'generate_diagnosis'
 };
 
 // Detailed health system data
@@ -588,6 +590,131 @@ export default function PeriHealthApp() {
     { id: 4, text: 'Consider progesterone if symptoms persist', approved: false, type: 'medication' },
   ]);
 
+  // Dynamic symptom intake state
+  const [patientProfile, setPatientProfile] = useState({
+    age: '45',
+    sex: 'female',
+    symptoms: [],
+    pmh: [],
+    medications: [],
+    familyHistory: []
+  });
+  const [currentSymptom, setCurrentSymptom] = useState({ description: '', duration: '', severity: 'moderate' });
+  const [generatedDiagnosis, setGeneratedDiagnosis] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const upcomingAppointment = {
+    date: 'Dec 3, 2025',
+    time: '10:30 AM',
+    provider: 'Dr. Sarah Chen',
+    type: 'Hormone Panel Review',
+    prepared: userConcerns.length > 0 || userQuestions.length > 0
+  };
+
+  // Generate differential diagnosis using Claude API
+  const generateDifferentialDiagnosis = async () => {
+    setIsGenerating(true);
+    
+    try {
+      const prompt = `You are a clinical decision support system. Based on the following patient presentation, generate a differential diagnosis following current clinical practice guidelines.
+
+Patient Demographics:
+- Age: ${patientProfile.age}
+- Sex: ${patientProfile.sex}
+
+Current Symptoms:
+${patientProfile.symptoms.map(s => `- ${s.description} (Duration: ${s.duration}, Severity: ${s.severity})`).join('\n')}
+
+${patientProfile.pmh.length > 0 ? `Past Medical History:\n${patientProfile.pmh.join(', ')}` : ''}
+
+${patientProfile.medications.length > 0 ? `Current Medications:\n${patientProfile.medications.join(', ')}` : ''}
+
+${patientProfile.familyHistory.length > 0 ? `Family History:\n${patientProfile.familyHistory.join(', ')}` : ''}
+
+Provide a comprehensive clinical analysis:
+1. Top 5-7 differential diagnoses ranked by likelihood based on the symptom constellation
+2. For each diagnosis, explain the supporting criteria and why it fits this presentation
+3. Recommended diagnostic tests (labs, imaging, other) to confirm or rule out each condition
+4. Identify any conditions that MUST be ruled out due to severity/urgency
+5. Age-appropriate and sex-appropriate screening considerations
+6. Cross-system patterns that may explain multiple symptoms
+
+CRITICAL: Your entire response MUST be ONLY valid JSON in this exact structure with no additional text, explanations, or markdown formatting:
+
+{
+  "differentialDiagnosis": [
+    {
+      "condition": "condition name",
+      "likelihood": "high|moderate|low",
+      "confidence": 85,
+      "supportingCriteria": ["criterion 1", "criterion 2"],
+      "explanation": "brief explanation of why this diagnosis fits",
+      "recommendedTests": ["test 1", "test 2"],
+      "clinicalGuideline": "reference to relevant clinical guideline"
+    }
+  ],
+  "ruleOutConditions": [
+    {
+      "condition": "serious condition to exclude",
+      "reason": "why it must be ruled out",
+      "urgency": "immediate|soon|routine"
+    }
+  ],
+  "ageRelatedScreening": [
+    {
+      "screening": "screening name",
+      "reason": "why recommended for this age/sex",
+      "frequency": "how often"
+    }
+  ],
+  "crossSystemPatterns": [
+    {
+      "pattern": "description of pattern across symptoms",
+      "implications": "what this pattern suggests",
+      "action": "recommended next steps"
+    }
+  ]
+}
+
+DO NOT include any text outside the JSON structure. DO NOT use markdown code blocks. Return ONLY the JSON object.`;
+
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 4000,
+          messages: [{
+            role: "user",
+            content: prompt
+          }]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+      let responseText = data.content[0].text;
+      
+      // Clean up any markdown formatting if present
+      responseText = responseText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      
+      const diagnosis = JSON.parse(responseText);
+      setGeneratedDiagnosis(diagnosis);
+      setScreen(SCREENS.GENERATE_DIAGNOSIS);
+      
+    } catch (error) {
+      console.error("Error generating diagnosis:", error);
+      alert("Sorry, there was an error generating the analysis. Please try again. Error: " + error.message);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const upcomingAppointment = {
     date: 'Dec 3, 2025',
     time: '10:30 AM',
@@ -674,9 +801,19 @@ export default function PeriHealthApp() {
               ))}
             </div>
 
-            <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
-              <Button variant="outline" style={{ flex: 1 }}>📨 Message Doctor</Button>
-              <Button variant="ghost" style={{ flex: 1 }}>📆 Schedule Visit</Button>
+            {/* Quick Actions */}
+            <div style={{ marginTop: '20px' }}>
+              <Button 
+                variant="accent" 
+                onClick={() => setScreen(SCREENS.SYMPTOM_INTAKE)}
+                style={{ marginBottom: '12px' }}
+              >
+                🩺 Check My Symptoms
+              </Button>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <Button variant="outline" style={{ flex: 1 }}>📨 Message Doctor</Button>
+                <Button variant="ghost" style={{ flex: 1 }}>📆 Schedule Visit</Button>
+              </div>
             </div>
           </div>
         </div>
@@ -1197,6 +1334,369 @@ export default function PeriHealthApp() {
 
             <p style={{ margin: '16px 0 0', fontSize: '11px', color: colors.textMuted, textAlign: 'center' }}>
               Have questions about these insights? Your care team is here to help.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* SYMPTOM INTAKE SCREEN */}
+      {screen === SCREENS.SYMPTOM_INTAKE && (
+        <div>
+          <Header 
+            title="Symptom Checker"
+            subtitle="Get AI-assisted health insights"
+            showBack
+            onBack={() => setScreen(SCREENS.DASHBOARD)}
+          />
+          
+          <div style={{ padding: '20px' }}>
+            <Card style={{ marginBottom: '16px', backgroundColor: `${colors.primary}08` }}>
+              <p style={{ margin: 0, fontSize: '13px', color: colors.text, lineHeight: '1.6' }}>
+                <strong>How this works:</strong> Share your symptoms and health information. Our AI will analyze patterns across medical literature and clinical guidelines to suggest possible conditions and next steps. This is not a diagnosis—it's a tool to help you have more informed conversations with your doctor.
+              </p>
+            </Card>
+
+            {/* Basic Demographics */}
+            <h3 style={{ margin: '20px 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Basic Information</h3>
+            <Card style={{ marginBottom: '16px' }}>
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px' }}>Age</label>
+                  <input
+                    type="number"
+                    value={patientProfile.age}
+                    onChange={(e) => setPatientProfile({...patientProfile, age: e.target.value})}
+                    style={{ width: '100%', padding: '10px', border: `1px solid ${colors.border}`, borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px' }}>Sex</label>
+                  <select
+                    value={patientProfile.sex}
+                    onChange={(e) => setPatientProfile({...patientProfile, sex: e.target.value})}
+                    style={{ width: '100%', padding: '10px', border: `1px solid ${colors.border}`, borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
+                  >
+                    <option value="female">Female</option>
+                    <option value="male">Male</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+            </Card>
+
+            {/* Symptoms */}
+            <h3 style={{ margin: '20px 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Current Symptoms</h3>
+            <Card style={{ marginBottom: '16px' }}>
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px' }}>Symptom Description</label>
+                <input
+                  type="text"
+                  value={currentSymptom.description}
+                  onChange={(e) => setCurrentSymptom({...currentSymptom, description: e.target.value})}
+                  placeholder="e.g., Night sweats, Joint pain, Fatigue"
+                  style={{ width: '100%', padding: '10px', border: `1px solid ${colors.border}`, borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px' }}>Duration</label>
+                  <input
+                    type="text"
+                    value={currentSymptom.duration}
+                    onChange={(e) => setCurrentSymptom({...currentSymptom, duration: e.target.value})}
+                    placeholder="e.g., 3 months, 2 weeks"
+                    style={{ width: '100%', padding: '10px', border: `1px solid ${colors.border}`, borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px' }}>Severity</label>
+                  <select
+                    value={currentSymptom.severity}
+                    onChange={(e) => setCurrentSymptom({...currentSymptom, severity: e.target.value})}
+                    style={{ width: '100%', padding: '10px', border: `1px solid ${colors.border}`, borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
+                  >
+                    <option value="mild">Mild</option>
+                    <option value="moderate">Moderate</option>
+                    <option value="severe">Severe</option>
+                  </select>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  if (currentSymptom.description && currentSymptom.duration) {
+                    setPatientProfile({
+                      ...patientProfile,
+                      symptoms: [...patientProfile.symptoms, {...currentSymptom}]
+                    });
+                    setCurrentSymptom({ description: '', duration: '', severity: 'moderate' });
+                  }
+                }}
+                disabled={!currentSymptom.description || !currentSymptom.duration}
+                style={{ padding: '10px 16px', backgroundColor: (currentSymptom.description && currentSymptom.duration) ? colors.accent : colors.divider, color: (currentSymptom.description && currentSymptom.duration) ? 'white' : colors.textMuted, border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: (currentSymptom.description && currentSymptom.duration) ? 'pointer' : 'not-allowed' }}
+              >
+                + Add Symptom
+              </button>
+
+              {patientProfile.symptoms.length > 0 && (
+                <div style={{ marginTop: '12px' }}>
+                  {patientProfile.symptoms.map((symptom, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '10px', backgroundColor: colors.divider, borderRadius: '8px', marginBottom: '8px' }}>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ margin: '0 0 4px', fontSize: '13px', color: colors.text, fontWeight: '500' }}>{symptom.description}</p>
+                        <p style={{ margin: 0, fontSize: '11px', color: colors.textMuted }}>Duration: {symptom.duration} • Severity: {symptom.severity}</p>
+                      </div>
+                      <button onClick={() => setPatientProfile({...patientProfile, symptoms: patientProfile.symptoms.filter((_, idx) => idx !== i)})} style={{ background: 'none', border: 'none', color: colors.textMuted, cursor: 'pointer', fontSize: '16px' }}>×</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+
+            {/* Past Medical History */}
+            <h3 style={{ margin: '20px 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Past Medical History (Optional)</h3>
+            <Card style={{ marginBottom: '16px' }}>
+              <input
+                type="text"
+                placeholder="e.g., Diabetes, Hypertension, Thyroid disease"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && e.target.value.trim()) {
+                    setPatientProfile({...patientProfile, pmh: [...patientProfile.pmh, e.target.value.trim()]});
+                    e.target.value = '';
+                  }
+                }}
+                style={{ width: '100%', padding: '10px', border: `1px solid ${colors.border}`, borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
+              />
+              <p style={{ margin: '8px 0 0', fontSize: '11px', color: colors.textMuted }}>Press Enter to add</p>
+              {patientProfile.pmh.length > 0 && (
+                <div style={{ marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {patientProfile.pmh.map((condition, i) => (
+                    <span key={i} style={{ padding: '6px 12px', backgroundColor: colors.divider, borderRadius: '12px', fontSize: '12px', color: colors.text, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      {condition}
+                      <button onClick={() => setPatientProfile({...patientProfile, pmh: patientProfile.pmh.filter((_, idx) => idx !== i)})} style={{ background: 'none', border: 'none', color: colors.textMuted, cursor: 'pointer', fontSize: '14px', padding: 0 }}>×</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </Card>
+
+            {/* Medications */}
+            <h3 style={{ margin: '20px 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Current Medications (Optional)</h3>
+            <Card style={{ marginBottom: '16px' }}>
+              <input
+                type="text"
+                placeholder="e.g., Metformin, Lisinopril, Levothyroxine"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && e.target.value.trim()) {
+                    setPatientProfile({...patientProfile, medications: [...patientProfile.medications, e.target.value.trim()]});
+                    e.target.value = '';
+                  }
+                }}
+                style={{ width: '100%', padding: '10px', border: `1px solid ${colors.border}`, borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
+              />
+              <p style={{ margin: '8px 0 0', fontSize: '11px', color: colors.textMuted }}>Press Enter to add</p>
+              {patientProfile.medications.length > 0 && (
+                <div style={{ marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {patientProfile.medications.map((med, i) => (
+                    <span key={i} style={{ padding: '6px 12px', backgroundColor: colors.divider, borderRadius: '12px', fontSize: '12px', color: colors.text, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      {med}
+                      <button onClick={() => setPatientProfile({...patientProfile, medications: patientProfile.medications.filter((_, idx) => idx !== i)})} style={{ background: 'none', border: 'none', color: colors.textMuted, cursor: 'pointer', fontSize: '14px', padding: 0 }}>×</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </Card>
+
+            {/* Family History */}
+            <h3 style={{ margin: '20px 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Family History (Optional)</h3>
+            <Card style={{ marginBottom: '20px' }}>
+              <input
+                type="text"
+                placeholder="e.g., Mother: breast cancer, Father: heart disease"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && e.target.value.trim()) {
+                    setPatientProfile({...patientProfile, familyHistory: [...patientProfile.familyHistory, e.target.value.trim()]});
+                    e.target.value = '';
+                  }
+                }}
+                style={{ width: '100%', padding: '10px', border: `1px solid ${colors.border}`, borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
+              />
+              <p style={{ margin: '8px 0 0', fontSize: '11px', color: colors.textMuted }}>Press Enter to add</p>
+              {patientProfile.familyHistory.length > 0 && (
+                <div style={{ marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {patientProfile.familyHistory.map((history, i) => (
+                    <span key={i} style={{ padding: '6px 12px', backgroundColor: colors.divider, borderRadius: '12px', fontSize: '12px', color: colors.text, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      {history}
+                      <button onClick={() => setPatientProfile({...patientProfile, familyHistory: patientProfile.familyHistory.filter((_, idx) => idx !== i)})} style={{ background: 'none', border: 'none', color: colors.textMuted, cursor: 'pointer', fontSize: '14px', padding: 0 }}>×</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </Card>
+
+            <Button 
+              onClick={generateDifferentialDiagnosis}
+              disabled={patientProfile.symptoms.length === 0 || isGenerating}
+            >
+              {isGenerating ? '🔄 Analyzing...' : '✨ Get AI Health Insights'}
+            </Button>
+
+            <p style={{ margin: '12px 0 0', fontSize: '11px', color: colors.textMuted, textAlign: 'center' }}>
+              This analysis is based on clinical guidelines and medical literature. Always consult a healthcare provider for medical advice.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* GENERATED DIAGNOSIS SCREEN */}
+      {screen === SCREENS.GENERATE_DIAGNOSIS && generatedDiagnosis && (
+        <div>
+          <Header 
+            title="Health Analysis"
+            subtitle="AI-assisted insights based on your symptoms"
+            showBack
+            onBack={() => setScreen(SCREENS.SYMPTOM_INTAKE)}
+          />
+          
+          <div style={{ padding: '20px' }}>
+            <Card style={{ marginBottom: '16px', backgroundColor: `${colors.warning}10`, border: `1px solid ${colors.warning}` }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <span style={{ fontSize: '20px' }}>⚠️</span>
+                <p style={{ margin: 0, fontSize: '12px', color: colors.text, lineHeight: '1.5' }}>
+                  <strong>Important:</strong> This is not a medical diagnosis. These are possible conditions based on your symptoms. Share this with your doctor to have an informed conversation about next steps.
+                </p>
+              </div>
+            </Card>
+
+            {/* Differential Diagnosis */}
+            <h3 style={{ margin: '0 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Possible Conditions</h3>
+            
+            {generatedDiagnosis.differentialDiagnosis.map((dx, i) => (
+              <Card key={i} style={{ marginBottom: '16px', border: `2px solid ${i === 0 ? colors.primary : colors.border}` }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: i === 0 ? colors.primary : colors.divider, color: i === 0 ? 'white' : colors.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '600' }}>{i + 1}</span>
+                    <h4 style={{ margin: 0, fontSize: '15px', color: colors.text, fontWeight: '600' }}>{dx.condition}</h4>
+                  </div>
+                  <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '600', backgroundColor: dx.likelihood === 'high' ? `${colors.accent}15` : dx.likelihood === 'moderate' ? `${colors.warning}15` : `${colors.primary}15`, color: dx.likelihood === 'high' ? colors.accent : dx.likelihood === 'moderate' ? colors.warning : colors.primary }}>
+                    {dx.likelihood.toUpperCase()}
+                  </span>
+                </div>
+                
+                <ConfidenceBar confidence={dx.confidence} color={dx.likelihood === 'high' ? colors.accent : dx.likelihood === 'moderate' ? colors.warning : colors.primary} />
+                
+                <div style={{ marginTop: '12px', padding: '12px', backgroundColor: `${colors.primary}08`, borderRadius: '8px' }}>
+                  <p style={{ margin: 0, fontSize: '13px', color: colors.text, lineHeight: '1.6' }}>
+                    <strong>Why this fits:</strong> {dx.explanation}
+                  </p>
+                </div>
+
+                <div style={{ marginTop: '12px' }}>
+                  <p style={{ margin: '0 0 6px', fontSize: '12px', color: colors.textMuted, fontWeight: '600' }}>Supporting Criteria:</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {dx.supportingCriteria.map((criterion, j) => (
+                      <span key={j} style={{ padding: '4px 10px', backgroundColor: colors.divider, borderRadius: '12px', fontSize: '11px', color: colors.text }}>{criterion}</span>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '12px' }}>
+                  <p style={{ margin: '0 0 6px', fontSize: '12px', color: colors.success, fontWeight: '600' }}>Recommended Tests:</p>
+                  <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '12px', color: colors.text, lineHeight: '1.6' }}>
+                    {dx.recommendedTests.map((test, j) => (
+                      <li key={j}>{test}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                {dx.clinicalGuideline && (
+                  <div style={{ marginTop: '12px', padding: '10px', backgroundColor: `${colors.primary}10`, borderRadius: '8px', borderLeft: `3px solid ${colors.primary}` }}>
+                    <p style={{ margin: 0, fontSize: '11px', color: colors.text, lineHeight: '1.5' }}>
+                      <strong>Clinical Reference:</strong> {dx.clinicalGuideline}
+                    </p>
+                  </div>
+                )}
+              </Card>
+            ))}
+
+            {/* Rule Out Conditions */}
+            {generatedDiagnosis.ruleOutConditions && generatedDiagnosis.ruleOutConditions.length > 0 && (
+              <>
+                <h3 style={{ margin: '20px 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Conditions to Rule Out</h3>
+                <p style={{ margin: '0 0 12px', fontSize: '13px', color: colors.textMuted }}>These conditions should be evaluated to ensure they're not causing your symptoms</p>
+                
+                {generatedDiagnosis.ruleOutConditions.map((condition, i) => (
+                  <Card key={i} style={{ marginBottom: '12px', border: `2px solid ${condition.urgency === 'immediate' ? colors.alert : colors.warning}` }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                      <h4 style={{ margin: 0, fontSize: '14px', color: colors.text, fontWeight: '600' }}>{condition.condition}</h4>
+                      <span style={{ padding: '4px 8px', backgroundColor: condition.urgency === 'immediate' ? `${colors.alert}15` : `${colors.warning}15`, color: condition.urgency === 'immediate' ? colors.alert : colors.warning, borderRadius: '6px', fontSize: '10px', fontWeight: '600', textTransform: 'uppercase' }}>
+                        {condition.urgency}
+                      </span>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '13px', color: colors.text, lineHeight: '1.5' }}>{condition.reason}</p>
+                  </Card>
+                ))}
+              </>
+            )}
+
+            {/* Cross-System Patterns */}
+            {generatedDiagnosis.crossSystemPatterns && generatedDiagnosis.crossSystemPatterns.length > 0 && (
+              <>
+                <h3 style={{ margin: '20px 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>
+                  <span style={{ marginRight: '8px' }}>🔗</span>
+                  Patterns Detected
+                </h3>
+                
+                {generatedDiagnosis.crossSystemPatterns.map((pattern, i) => (
+                  <Card key={i} style={{ marginBottom: '12px', border: `2px solid ${colors.accent}`, background: `${colors.accent}05` }}>
+                    <p style={{ margin: '0 0 8px', fontSize: '14px', color: colors.text, fontWeight: '600' }}>{pattern.pattern}</p>
+                    <p style={{ margin: '0 0 10px', fontSize: '13px', color: colors.text, lineHeight: '1.5' }}>{pattern.implications}</p>
+                    <div style={{ padding: '10px', backgroundColor: 'white', borderRadius: '8px', borderLeft: `3px solid ${colors.accent}` }}>
+                      <p style={{ margin: 0, fontSize: '12px', color: colors.text }}><strong>Recommendation:</strong> {pattern.action}</p>
+                    </div>
+                  </Card>
+                ))}
+              </>
+            )}
+
+            {/* Age-Related Screening */}
+            {generatedDiagnosis.ageRelatedScreening && generatedDiagnosis.ageRelatedScreening.length > 0 && (
+              <>
+                <h3 style={{ margin: '20px 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Recommended Screenings</h3>
+                <p style={{ margin: '0 0 12px', fontSize: '13px', color: colors.textMuted }}>Based on your age and sex</p>
+                
+                {generatedDiagnosis.ageRelatedScreening.map((screening, i) => (
+                  <Card key={i} style={{ marginBottom: '12px' }}>
+                    <h4 style={{ margin: '0 0 6px', fontSize: '14px', color: colors.text, fontWeight: '600' }}>{screening.screening}</h4>
+                    <p style={{ margin: '0 0 8px', fontSize: '13px', color: colors.text }}>{screening.reason}</p>
+                    <p style={{ margin: 0, fontSize: '12px', color: colors.textMuted }}><strong>Frequency:</strong> {screening.frequency}</p>
+                  </Card>
+                ))}
+              </>
+            )}
+
+            {/* Action Buttons */}
+            <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <Button variant="primary" onClick={() => {
+                // In a real app, this would share with the doctor
+                alert('In a production version, this would send these insights to your doctor with your permission.');
+              }}>
+                📤 Share with My Doctor
+              </Button>
+              <Button variant="outline" onClick={() => setScreen(SCREENS.SYMPTOM_INTAKE)}>
+                ← Modify Symptoms
+              </Button>
+              <Button variant="ghost" onClick={() => {
+                setScreen(SCREENS.DASHBOARD);
+                setGeneratedDiagnosis(null);
+              }}>
+                Back to Dashboard
+              </Button>
+            </div>
+
+            <p style={{ margin: '16px 0 0', fontSize: '11px', color: colors.textMuted, textAlign: 'center' }}>
+              Analysis generated by AI based on current medical literature and clinical guidelines. Always consult a licensed healthcare provider for diagnosis and treatment.
             </p>
           </div>
         </div>
