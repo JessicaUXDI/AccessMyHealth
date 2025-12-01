@@ -59,3 +59,36 @@ This is a prototype demonstrating intelligent healthcare tracking that:
 - **Timeline Intelligence**: Connects events across time (knee pain → reduced activity → weight gain → more symptoms)
 - **Cross-System Thinking**: Links related issues across different health domains
 - **Insight, Not Alarm**: Educates about possibilities while empowering prevention and management
+
+
+## Clinical Logic
+
+### Personal Baseline System
+
+The system tracks each patient's historical values and calculates deviation:
+
+```javascript
+{
+  name: 'Estradiol',
+  value: 95,           // Current
+  refRange: '30-400',  // Population normal
+  baseline: 145,       // This patient's normal
+  deviation: -34,      // 34% below THEIR baseline
+}
+```
+
+### AI Pattern Recognition
+
+Cross-visit analysis identifies clusters:
+- Musculoskeletal (frozen shoulder + plantar fasciitis + joint pain → estrogen decline)
+- Cardiovascular (palpitations + HR elevation → hormone fluctuation)
+- Metabolic (LDL rise + weight gain → menopausal transition)
+
+## License
+
+Proprietary - All rights reserved
+
+## Contact
+
+Jessica Poole (creator/designer)
+iamjessicapoole@gmail.com
