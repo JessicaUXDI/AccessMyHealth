@@ -10,7 +10,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid patient data' });
     }
 
-    const prompt = `You are a clinical decision support system. Based on the following patient presentation, generate a differential diagnosis following current clinical practice guidelines.
+    const prompt = `You are a clinical decision support system. Based on the following patient presentation, generate a differential diagnosis following current clinical diagnositc practice guidelines and validated medical research.
 
 Patient Demographics:
 - Age: ${patientProfile.age}
@@ -26,12 +26,12 @@ ${patientProfile.medications.length > 0 ? `Current Medications:\n${patientProfil
 ${patientProfile.familyHistory.length > 0 ? `Family History:\n${patientProfile.familyHistory.join(', ')}` : ''}
 
 Provide a comprehensive clinical analysis:
-1. Top 5-7 differential diagnoses ranked by likelihood
+1. Top 5-7 differential diagnoses ranked by likelihood, based on signs, symptoms and patient demographic against clinical decision-making and assessment guidelines
 2. For each diagnosis, explain the supporting criteria
-3. Recommended diagnostic tests
-4. Conditions that MUST be ruled out due to severity/urgency
-5. Age-appropriate and sex-appropriate screening
-6. Cross-system patterns
+3. Recommended diagnostic tests and assessments to become familiar with and discuss with MD
+4. Symptoms that MUST be further evaluated for more accurate diagnosis 
+5. Age-appropriate, sex-appropriate screening, and PMH appropirate screening
+6. Cross-system and visit patterns
 
 Return ONLY valid JSON with no markdown:
 
