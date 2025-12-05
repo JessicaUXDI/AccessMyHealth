@@ -54,7 +54,9 @@ const SCREENS = {
   PLAN_OF_CARE: 'plan_of_care',
   HEALTH_SYSTEM_DETAIL: 'health_system_detail',
   SYMPTOM_INTAKE: 'symptom_intake',
-  GENERATE_DIAGNOSIS: 'generate_diagnosis'
+  GENERATE_DIAGNOSIS: 'generate_diagnosis',
+  SCHEDULE_VISIT: 'schedule_visit',
+  MESSAGES: 'messages'
 };
 
 // Detailed health system data
@@ -595,13 +597,17 @@ export default function PeriHealthApp() {
     age: '45',
     sex: 'female',
     symptoms: [],
-    pmh: [],
-    medications: [],
-    familyHistory: []
+    pmh: '',
+    medications: '',
+    familyHistory: ''
   });
-  const [currentSymptom, setCurrentSymptom] = useState({ description: '', duration: '', severity: 'moderate' });
+  const [currentSymptom, setCurrentSymptom] = useState({ description: '', duration: '', severity: 'not_interfering' });
   const [generatedDiagnosis, setGeneratedDiagnosis] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [bookedAppointment, setBookedAppointment] = useState(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [pendingBooking, setPendingBooking] = useState(null);
 
   const upcomingAppointment = {
     date: 'Dec 3, 2025',
@@ -617,11 +623,17 @@ export default function PeriHealthApp() {
     
     try {
       // Validate input before sending
-      if (!patientProfile.symptoms || patientProfile.symptoms.length === 0) {
-        alert('Please add at least one symptom before generating insights.');
+      if (!currentSymptom.description || !currentSymptom.duration) {
+        alert('Please enter your primary complaint and when you first noticed it before generating insights.');
         setIsGenerating(false);
         return;
       }
+
+      // Package currentSymptom as a single-item array for the API
+      const patientData = {
+        ...patientProfile,
+        symptoms: [currentSymptom]
+      };
 
       // Call our secure backend API instead of Claude directly
       const response = await fetch("/api/analyze-symptoms", {
@@ -630,7 +642,7 @@ export default function PeriHealthApp() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          patientProfile: patientProfile
+          patientProfile: patientData
         })
       });
 
@@ -667,26 +679,75 @@ export default function PeriHealthApp() {
               </div>
             </Card>
 
+            {/* Upcoming Appointment */}
             <Card onClick={() => setScreen(SCREENS.APPOINTMENT)} style={{ marginBottom: '20px', border: `2px solid ${colors.accent}`, background: `${colors.accent}08` }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                 <div>
                   <p style={{ margin: '0 0 4px', fontSize: '12px', color: colors.accent, fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Upcoming Appointment</p>
-                  <h3 style={{ margin: 0, fontSize: '17px', color: colors.text }}>{upcomingAppointment.type}</h3>
+                  <h3 style={{ margin: 0, fontSize: '17px', color: colors.text }}>
+                    {bookedAppointment ? bookedAppointment.type : upcomingAppointment.type}
+                  </h3>
                 </div>
-                <span style={{ fontSize: '24px' }}>📅</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setScreen(SCREENS.SCHEDULE_VISIT);
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '18px',
+                      padding: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      color: colors.textMuted
+                    }}
+                    title="Reschedule"
+                  >
+                    🔄
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowCancelModal(true);
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '18px',
+                      padding: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      color: colors.alert
+                    }}
+                    title="Cancel"
+                  >
+                    ✕
+                  </button>
+                  <span style={{ fontSize: '24px' }}>📅</span>
+                </div>
               </div>
               <div style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
                 <div>
                   <p style={{ margin: 0, fontSize: '12px', color: colors.textMuted }}>Date</p>
-                  <p style={{ margin: '2px 0 0', fontSize: '14px', color: colors.text, fontWeight: '500' }}>{upcomingAppointment.date}</p>
+                  <p style={{ margin: '2px 0 0', fontSize: '14px', color: colors.text, fontWeight: '500' }}>
+                    {bookedAppointment ? bookedAppointment.date : upcomingAppointment.date}
+                  </p>
                 </div>
                 <div>
                   <p style={{ margin: 0, fontSize: '12px', color: colors.textMuted }}>Time</p>
-                  <p style={{ margin: '2px 0 0', fontSize: '14px', color: colors.text, fontWeight: '500' }}>{upcomingAppointment.time}</p>
+                  <p style={{ margin: '2px 0 0', fontSize: '14px', color: colors.text, fontWeight: '500' }}>
+                    {bookedAppointment ? bookedAppointment.time : upcomingAppointment.time}
+                  </p>
                 </div>
                 <div>
                   <p style={{ margin: 0, fontSize: '12px', color: colors.textMuted }}>Provider</p>
-                  <p style={{ margin: '2px 0 0', fontSize: '14px', color: colors.text, fontWeight: '500' }}>{upcomingAppointment.provider}</p>
+                  <p style={{ margin: '2px 0 0', fontSize: '14px', color: colors.text, fontWeight: '500' }}>
+                    {bookedAppointment ? bookedAppointment.provider : upcomingAppointment.provider}
+                  </p>
                 </div>
               </div>
               <div style={{ backgroundColor: upcomingAppointment.prepared ? `${colors.success}15` : `${colors.warning}15`, padding: '10px 14px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -729,20 +790,6 @@ export default function PeriHealthApp() {
               ))}
             </div>
 
-            {/* Quick Actions */}
-            <div style={{ marginTop: '20px' }}>
-              <Button 
-                variant="accent" 
-                onClick={() => setScreen(SCREENS.SYMPTOM_INTAKE)}
-                style={{ marginBottom: '12px' }}
-              >
-                🩺 Check My Symptoms
-              </Button>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <Button variant="outline" style={{ flex: 1 }}>📨 Message Doctor</Button>
-                <Button variant="ghost" style={{ flex: 1 }}>📆 Schedule Visit</Button>
-              </div>
-            </div>
           </div>
         </div>
       )}
@@ -1285,9 +1332,9 @@ export default function PeriHealthApp() {
             </Card>
 
             {/* Basic Demographics */}
-            <h3 style={{ margin: '20px 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Basic Information</h3>
             <Card style={{ marginBottom: '16px' }}>
-              <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+              <h3 style={{ margin: '0 0 16px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Basic Information</h3>
+              <div style={{ display: 'flex', gap: '12px' }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px' }}>Age</label>
                   <input
@@ -1306,17 +1353,19 @@ export default function PeriHealthApp() {
                   >
                     <option value="female">Female</option>
                     <option value="male">Male</option>
-                    <option value="other">Other</option>
+                    <option value="transgender_female">Transgender Female</option>
+                    <option value="transgender_male">Transgender Male</option>
                   </select>
                 </div>
               </div>
             </Card>
 
             {/* Symptoms */}
-            <h3 style={{ margin: '20px 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Current Symptoms</h3>
             <Card style={{ marginBottom: '16px' }}>
+              <h3 style={{ margin: '0 0 16px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Current Symptoms</h3>
+              
               <div style={{ marginBottom: '12px' }}>
-                <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px' }}>Symptom Description</label>
+                <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px' }}>Primary Complaint</label>
                 <input
                   type="text"
                   value={currentSymptom.description}
@@ -1326,146 +1375,70 @@ export default function PeriHealthApp() {
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px' }}>Duration</label>
-                  <input
-                    type="text"
-                    value={currentSymptom.duration}
-                    onChange={(e) => setCurrentSymptom({...currentSymptom, duration: e.target.value})}
-                    placeholder="e.g., 3 months, 2 weeks"
-                    style={{ width: '100%', padding: '10px', border: `1px solid ${colors.border}`, borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
-                  />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px' }}>Severity</label>
-                  <select
-                    value={currentSymptom.severity}
-                    onChange={(e) => setCurrentSymptom({...currentSymptom, severity: e.target.value})}
-                    style={{ width: '100%', padding: '10px', border: `1px solid ${colors.border}`, borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
-                  >
-                    <option value="mild">Mild</option>
-                    <option value="moderate">Moderate</option>
-                    <option value="severe">Severe</option>
-                  </select>
-                </div>
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px' }}>When did you first notice this symptom?</label>
+                <input
+                  type="text"
+                  value={currentSymptom.duration}
+                  onChange={(e) => setCurrentSymptom({...currentSymptom, duration: e.target.value})}
+                  placeholder="e.g., 3 months ago, last week"
+                  style={{ width: '100%', padding: '10px', border: `1px solid ${colors.border}`, borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
+                />
               </div>
 
-              <button
-                onClick={() => {
-                  if (currentSymptom.description && currentSymptom.duration) {
-                    setPatientProfile({
-                      ...patientProfile,
-                      symptoms: [...patientProfile.symptoms, {...currentSymptom}]
-                    });
-                    setCurrentSymptom({ description: '', duration: '', severity: 'moderate' });
-                  }
-                }}
-                disabled={!currentSymptom.description || !currentSymptom.duration}
-                style={{ padding: '10px 16px', backgroundColor: (currentSymptom.description && currentSymptom.duration) ? colors.accent : colors.divider, color: (currentSymptom.description && currentSymptom.duration) ? 'white' : colors.textMuted, border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: (currentSymptom.description && currentSymptom.duration) ? 'pointer' : 'not-allowed' }}
-              >
-                + Add Symptom
-              </button>
-
-              {patientProfile.symptoms.length > 0 && (
-                <div style={{ marginTop: '12px' }}>
-                  {patientProfile.symptoms.map((symptom, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '10px', backgroundColor: colors.divider, borderRadius: '8px', marginBottom: '8px' }}>
-                      <div style={{ flex: 1 }}>
-                        <p style={{ margin: '0 0 4px', fontSize: '13px', color: colors.text, fontWeight: '500' }}>{symptom.description}</p>
-                        <p style={{ margin: 0, fontSize: '11px', color: colors.textMuted }}>Duration: {symptom.duration} • Severity: {symptom.severity}</p>
-                      </div>
-                      <button onClick={() => setPatientProfile({...patientProfile, symptoms: patientProfile.symptoms.filter((_, idx) => idx !== i)})} style={{ background: 'none', border: 'none', color: colors.textMuted, cursor: 'pointer', fontSize: '16px' }}>×</button>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px' }}>Intensity</label>
+                <select
+                  value={currentSymptom.severity}
+                  onChange={(e) => setCurrentSymptom({...currentSymptom, severity: e.target.value})}
+                  style={{ width: '100%', padding: '10px', border: `1px solid ${colors.border}`, borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
+                >
+                  <option value="not_interfering">Present, but not interfering with ADLs</option>
+                  <option value="somewhat_limiting">Somewhat interferes with or limits some ADLs</option>
+                  <option value="fully_limiting">Fully limits one or more ADLs</option>
+                </select>
+              </div>
             </Card>
 
             {/* Past Medical History */}
-            <h3 style={{ margin: '20px 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Past Medical History (Optional)</h3>
             <Card style={{ marginBottom: '16px' }}>
+              <h3 style={{ margin: '0 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Past Medical History <span style={{ fontWeight: '400', color: colors.textMuted }}>(Optional)</span></h3>
               <input
                 type="text"
+                value={patientProfile.pmh}
+                onChange={(e) => setPatientProfile({...patientProfile, pmh: e.target.value})}
                 placeholder="e.g., Diabetes, Hypertension, Thyroid disease"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && e.target.value.trim()) {
-                    setPatientProfile({...patientProfile, pmh: [...patientProfile.pmh, e.target.value.trim()]});
-                    e.target.value = '';
-                  }
-                }}
                 style={{ width: '100%', padding: '10px', border: `1px solid ${colors.border}`, borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
               />
-              <p style={{ margin: '8px 0 0', fontSize: '11px', color: colors.textMuted }}>Press Enter to add</p>
-              {patientProfile.pmh.length > 0 && (
-                <div style={{ marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                  {patientProfile.pmh.map((condition, i) => (
-                    <span key={i} style={{ padding: '6px 12px', backgroundColor: colors.divider, borderRadius: '12px', fontSize: '12px', color: colors.text, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      {condition}
-                      <button onClick={() => setPatientProfile({...patientProfile, pmh: patientProfile.pmh.filter((_, idx) => idx !== i)})} style={{ background: 'none', border: 'none', color: colors.textMuted, cursor: 'pointer', fontSize: '14px', padding: 0 }}>×</button>
-                    </span>
-                  ))}
-                </div>
-              )}
             </Card>
 
             {/* Medications */}
-            <h3 style={{ margin: '20px 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Current Medications (Optional)</h3>
             <Card style={{ marginBottom: '16px' }}>
+              <h3 style={{ margin: '0 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Current Medications <span style={{ fontWeight: '400', color: colors.textMuted }}>(Optional)</span></h3>
               <input
                 type="text"
+                value={patientProfile.medications}
+                onChange={(e) => setPatientProfile({...patientProfile, medications: e.target.value})}
                 placeholder="e.g., Metformin, Lisinopril, Levothyroxine"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && e.target.value.trim()) {
-                    setPatientProfile({...patientProfile, medications: [...patientProfile.medications, e.target.value.trim()]});
-                    e.target.value = '';
-                  }
-                }}
                 style={{ width: '100%', padding: '10px', border: `1px solid ${colors.border}`, borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
               />
-              <p style={{ margin: '8px 0 0', fontSize: '11px', color: colors.textMuted }}>Press Enter to add</p>
-              {patientProfile.medications.length > 0 && (
-                <div style={{ marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                  {patientProfile.medications.map((med, i) => (
-                    <span key={i} style={{ padding: '6px 12px', backgroundColor: colors.divider, borderRadius: '12px', fontSize: '12px', color: colors.text, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      {med}
-                      <button onClick={() => setPatientProfile({...patientProfile, medications: patientProfile.medications.filter((_, idx) => idx !== i)})} style={{ background: 'none', border: 'none', color: colors.textMuted, cursor: 'pointer', fontSize: '14px', padding: 0 }}>×</button>
-                    </span>
-                  ))}
-                </div>
-              )}
             </Card>
 
             {/* Family History */}
-            <h3 style={{ margin: '20px 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Family History (Optional)</h3>
             <Card style={{ marginBottom: '20px' }}>
+              <h3 style={{ margin: '0 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Family History <span style={{ fontWeight: '400', color: colors.textMuted }}>(Optional)</span></h3>
               <input
                 type="text"
+                value={patientProfile.familyHistory}
+                onChange={(e) => setPatientProfile({...patientProfile, familyHistory: e.target.value})}
                 placeholder="e.g., Mother: breast cancer, Father: heart disease"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && e.target.value.trim()) {
-                    setPatientProfile({...patientProfile, familyHistory: [...patientProfile.familyHistory, e.target.value.trim()]});
-                    e.target.value = '';
-                  }
-                }}
                 style={{ width: '100%', padding: '10px', border: `1px solid ${colors.border}`, borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
               />
-              <p style={{ margin: '8px 0 0', fontSize: '11px', color: colors.textMuted }}>Press Enter to add</p>
-              {patientProfile.familyHistory.length > 0 && (
-                <div style={{ marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                  {patientProfile.familyHistory.map((history, i) => (
-                    <span key={i} style={{ padding: '6px 12px', backgroundColor: colors.divider, borderRadius: '12px', fontSize: '12px', color: colors.text, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      {history}
-                      <button onClick={() => setPatientProfile({...patientProfile, familyHistory: patientProfile.familyHistory.filter((_, idx) => idx !== i)})} style={{ background: 'none', border: 'none', color: colors.textMuted, cursor: 'pointer', fontSize: '14px', padding: 0 }}>×</button>
-                    </span>
-                  ))}
-                </div>
-              )}
             </Card>
 
             <Button 
               onClick={generateDifferentialDiagnosis}
-              disabled={patientProfile.symptoms.length === 0 || isGenerating}
+              disabled={!currentSymptom.description || !currentSymptom.duration || isGenerating}
             >
               {isGenerating ? '🔄 Analyzing...' : '✨ Get AI Health Insights'}
             </Button>
@@ -1629,6 +1602,480 @@ export default function PeriHealthApp() {
           </div>
         </div>
       )}
+
+      {/* SCHEDULE VISIT SCREEN */}
+      {screen === SCREENS.SCHEDULE_VISIT && (
+        <div>
+          <Header 
+            title="Schedule Visit"
+            subtitle="Book appointment with Dr. Chen"
+            showBack
+            onBack={() => setScreen(SCREENS.DASHBOARD)}
+          />
+          
+          <div style={{ padding: '20px' }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Next Available Appointments</h3>
+            
+            {/* Dec 9 - Soonest */}
+            <Card style={{ 
+              marginBottom: '16px', 
+              border: bookedAppointment?.id === 'dec9' ? `2px solid ${colors.success}` : `2px solid ${colors.primary}`,
+              backgroundColor: bookedAppointment?.id === 'dec9' ? `${colors.success}08` : 'white',
+              opacity: bookedAppointment && bookedAppointment.id !== 'dec9' ? 0.5 : 1
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                <div>
+                  <p style={{ margin: '0 0 4px', fontSize: '16px', fontWeight: '600', color: colors.text }}>Monday, December 9</p>
+                  <p style={{ margin: 0, fontSize: '14px', color: colors.textMuted }}>2:30 PM - 3:00 PM</p>
+                </div>
+                {bookedAppointment?.id === 'dec9' ? (
+                  <StatusBadge status="good" text="Booked" />
+                ) : (
+                  <StatusBadge status="insight" text="Soonest" />
+                )}
+              </div>
+              <p style={{ margin: '12px 0', fontSize: '13px', color: colors.text }}>📍 In-Person Visit</p>
+              <p style={{ margin: '0 0 12px', fontSize: '12px', color: colors.textMuted }}>450 Serra Mall, Stanford, CA 94305</p>
+              {bookedAppointment?.id === 'dec9' ? (
+                <p style={{ margin: 0, fontSize: '13px', color: colors.success, fontWeight: '600' }}>✓ This is your scheduled appointment</p>
+              ) : (
+                <Button 
+                  variant="accent" 
+                  style={{ width: '100%' }}
+                  disabled={bookedAppointment !== null}
+                  onClick={() => {
+                    setPendingBooking({
+                      id: 'dec9',
+                      date: 'Dec 9, 2025',
+                      time: '2:30 PM',
+                      provider: 'Dr. Sarah Chen',
+                      type: 'In-Person Visit',
+                      location: '450 Serra Mall, Stanford, CA'
+                    });
+                    setShowBookingModal(true);
+                  }}
+                >
+                  {bookedAppointment ? 'Already Booked' : 'Book This Appointment'}
+                </Button>
+              )}
+            </Card>
+
+            {/* Dec 10 - Telehealth */}
+            <Card style={{ 
+              marginBottom: '16px',
+              border: bookedAppointment?.id === 'dec10' ? `2px solid ${colors.success}` : `1px solid ${colors.border}`,
+              backgroundColor: bookedAppointment?.id === 'dec10' ? `${colors.success}08` : 'white',
+              opacity: bookedAppointment && bookedAppointment.id !== 'dec10' ? 0.5 : 1
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                <div>
+                  <p style={{ margin: '0 0 4px', fontSize: '16px', fontWeight: '600', color: colors.text }}>Tuesday, December 10</p>
+                  <p style={{ margin: 0, fontSize: '14px', color: colors.textMuted }}>9:00 AM - 9:30 AM</p>
+                </div>
+                {bookedAppointment?.id === 'dec10' && (
+                  <StatusBadge status="good" text="Booked" />
+                )}
+              </div>
+              <p style={{ margin: '12px 0', fontSize: '13px', color: colors.text }}>💻 Telehealth Visit</p>
+              <p style={{ margin: '0 0 12px', fontSize: '12px', color: colors.textMuted }}>Video call via secure patient portal</p>
+              {bookedAppointment?.id === 'dec10' ? (
+                <p style={{ margin: 0, fontSize: '13px', color: colors.success, fontWeight: '600' }}>✓ This is your scheduled appointment</p>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  style={{ width: '100%' }}
+                  disabled={bookedAppointment !== null}
+                  onClick={() => {
+                    setPendingBooking({
+                      id: 'dec10',
+                      date: 'Dec 10, 2025',
+                      time: '9:00 AM',
+                      provider: 'Dr. Sarah Chen',
+                      type: 'Telehealth Visit',
+                      location: 'Video call'
+                    });
+                    setShowBookingModal(true);
+                  }}
+                >
+                  {bookedAppointment ? 'Already Booked' : 'Book This Appointment'}
+                </Button>
+              )}
+            </Card>
+
+            {/* Dec 11 - In-Person */}
+            <Card style={{ 
+              marginBottom: '16px',
+              border: bookedAppointment?.id === 'dec11' ? `2px solid ${colors.success}` : `1px solid ${colors.border}`,
+              backgroundColor: bookedAppointment?.id === 'dec11' ? `${colors.success}08` : 'white',
+              opacity: bookedAppointment && bookedAppointment.id !== 'dec11' ? 0.5 : 1
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                <div>
+                  <p style={{ margin: '0 0 4px', fontSize: '16px', fontWeight: '600', color: colors.text }}>Wednesday, December 11</p>
+                  <p style={{ margin: 0, fontSize: '14px', color: colors.textMuted }}>4:00 PM - 4:30 PM</p>
+                </div>
+                {bookedAppointment?.id === 'dec11' && (
+                  <StatusBadge status="good" text="Booked" />
+                )}
+              </div>
+              <p style={{ margin: '12px 0', fontSize: '13px', color: colors.text }}>📍 In-Person Visit</p>
+              <p style={{ margin: '0 0 12px', fontSize: '12px', color: colors.textMuted }}>450 Serra Mall, Stanford, CA 94305</p>
+              {bookedAppointment?.id === 'dec11' ? (
+                <p style={{ margin: 0, fontSize: '13px', color: colors.success, fontWeight: '600' }}>✓ This is your scheduled appointment</p>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  style={{ width: '100%' }}
+                  disabled={bookedAppointment !== null}
+                  onClick={() => {
+                    setPendingBooking({
+                      id: 'dec11',
+                      date: 'Dec 11, 2025',
+                      time: '4:00 PM',
+                      provider: 'Dr. Sarah Chen',
+                      type: 'In-Person Visit',
+                      location: '450 Serra Mall, Stanford, CA'
+                    });
+                    setShowBookingModal(true);
+                  }}
+                >
+                  {bookedAppointment ? 'Already Booked' : 'Book This Appointment'}
+                </Button>
+              )}
+            </Card>
+
+            {/* Date Picker Option */}
+            <Card style={{ marginBottom: '16px', backgroundColor: `${colors.primary}08` }}>
+              <h4 style={{ margin: '0 0 12px', fontSize: '14px', fontWeight: '600', color: colors.text }}>Don't see a time that works?</h4>
+              <p style={{ margin: '0 0 12px', fontSize: '13px', color: colors.text }}>Select a preferred date and we'll find available times</p>
+              <input
+                type="date"
+                min="2025-12-06"
+                style={{ 
+                  width: '100%', 
+                  padding: '10px', 
+                  border: `1px solid ${colors.border}`, 
+                  borderRadius: '8px', 
+                  fontSize: '14px', 
+                  boxSizing: 'border-box',
+                  marginBottom: '12px'
+                }}
+              />
+              <Button variant="outline" style={{ width: '100%' }} onClick={() => alert('In a production version, this would show available times for your selected date.')}>
+                Search This Date
+              </Button>
+            </Card>
+
+            {/* Urgent Care Info */}
+            <Card style={{ backgroundColor: `${colors.warning}10`, border: `1px solid ${colors.warning}` }}>
+              <p style={{ margin: 0, fontSize: '12px', color: colors.text, lineHeight: '1.6' }}>
+                <strong>Need urgent care?</strong> For urgent medical concerns, call our clinic at (650) 123-4567 or visit the nearest emergency department.
+              </p>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {/* MESSAGES SCREEN */}
+      {screen === SCREENS.MESSAGES && (
+        <div>
+          <Header 
+            title="Messages"
+            subtitle="Secure communication with your care team"
+            showBack
+            onBack={() => setScreen(SCREENS.DASHBOARD)}
+          />
+          
+          <div style={{ padding: '20px' }}>
+            <Card style={{ marginBottom: '16px', backgroundColor: `${colors.success}08`, border: `1px solid ${colors.success}` }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <span style={{ fontSize: '16px' }}>🔒</span>
+                <p style={{ margin: 0, fontSize: '12px', color: colors.text, lineHeight: '1.5' }}>
+                  <strong>End-to-end encrypted</strong> - Your messages are private and secure. Only you and your care team can read them.
+                </p>
+              </div>
+            </Card>
+
+            <h3 style={{ margin: '0 0 16px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Recent Conversations</h3>
+
+            <Card style={{ marginBottom: '12px', cursor: 'pointer' }} onClick={() => alert('Message thread would open here')}>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: colors.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '600', fontSize: '16px' }}>
+                  SC
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
+                    <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: colors.text }}>Dr. Sarah Chen</p>
+                    <p style={{ margin: 0, fontSize: '11px', color: colors.textMuted }}>2 hours ago</p>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '13px', color: colors.text }}>Lab results look good. Let's discuss at your next...</p>
+                  <StatusBadge status="attention" text="1 New" style={{ marginTop: '6px' }} />
+                </div>
+              </div>
+            </Card>
+
+            <Card style={{ marginBottom: '12px', cursor: 'pointer' }} onClick={() => alert('Message thread would open here')}>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: colors.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '600', fontSize: '16px' }}>
+                  AR
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
+                    <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: colors.text }}>Alex Rivera, PT</p>
+                    <p style={{ margin: 0, fontSize: '11px', color: colors.textMuted }}>Yesterday</p>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '13px', color: colors.textMuted }}>Here are your home exercise instructions...</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card style={{ marginBottom: '16px', cursor: 'pointer' }} onClick={() => alert('Message thread would open here')}>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: colors.divider, display: 'flex', alignItems: 'center', justifyContent: 'center', color: colors.textMuted, fontWeight: '600', fontSize: '16px' }}>
+                  CS
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
+                    <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: colors.text }}>Care Scheduler</p>
+                    <p style={{ margin: 0, fontSize: '11px', color: colors.textMuted }}>Dec 1</p>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '13px', color: colors.textMuted }}>Appointment confirmed for Dec 3 at 10:30 AM</p>
+                </div>
+              </div>
+            </Card>
+
+            <Button variant="accent" style={{ width: '100%' }}>
+              ✉️ New Message
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* CANCEL APPOINTMENT MODAL */}
+      {showCancelModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '16px',
+            padding: '24px',
+            maxWidth: '380px',
+            width: '100%',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
+          }}>
+            <h3 style={{ margin: '0 0 12px', fontSize: '18px', color: colors.text, fontWeight: '600' }}>
+              Cancel Appointment?
+            </h3>
+            <p style={{ margin: '0 0 20px', fontSize: '14px', color: colors.textMuted, lineHeight: '1.5' }}>
+              Are you sure you want to cancel your appointment with Dr. Chen on {bookedAppointment ? bookedAppointment.date : upcomingAppointment.date} at {bookedAppointment ? bookedAppointment.time : upcomingAppointment.time}?
+            </p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <Button 
+                variant="outline" 
+                style={{ flex: 1 }}
+                onClick={() => setShowCancelModal(false)}
+              >
+                Keep Appointment
+              </Button>
+              <Button 
+                variant="primary"
+                style={{ flex: 1, backgroundColor: colors.alert, border: 'none' }}
+                onClick={() => {
+                  setBookedAppointment(null);
+                  setShowCancelModal(false);
+                }}
+              >
+                Cancel It
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* BOOKING CONFIRMATION MODAL */}
+      {showBookingModal && pendingBooking && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '16px',
+            padding: '24px',
+            maxWidth: '380px',
+            width: '100%',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
+          }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: '18px', color: colors.text, fontWeight: '600' }}>
+              Confirm Appointment
+            </h3>
+            
+            <Card style={{ marginBottom: '20px', backgroundColor: `${colors.accent}08` }}>
+              <p style={{ margin: '0 0 8px', fontSize: '13px', color: colors.textMuted, fontWeight: '500' }}>
+                {pendingBooking.type}
+              </p>
+              <p style={{ margin: '0 0 4px', fontSize: '16px', color: colors.text, fontWeight: '600' }}>
+                {pendingBooking.date}
+              </p>
+              <p style={{ margin: '0 0 4px', fontSize: '14px', color: colors.text }}>
+                {pendingBooking.time}
+              </p>
+              <p style={{ margin: '0 0 8px', fontSize: '13px', color: colors.textMuted }}>
+                {pendingBooking.provider}
+              </p>
+              <p style={{ margin: 0, fontSize: '13px', color: colors.text }}>
+                📍 {pendingBooking.location}
+              </p>
+            </Card>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <Button 
+                variant="accent"
+                style={{ width: '100%' }}
+                onClick={() => {
+                  setBookedAppointment(pendingBooking);
+                  setShowBookingModal(false);
+                  setPendingBooking(null);
+                  setScreen(SCREENS.DASHBOARD);
+                }}
+              >
+                Confirm Booking
+              </Button>
+              <Button 
+                variant="outline" 
+                style={{ width: '100%' }}
+                onClick={() => {
+                  setShowBookingModal(false);
+                  setPendingBooking(null);
+                }}
+              >
+                Choose Another Date
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* BOTTOM NAVIGATION */}
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        maxWidth: '420px',
+        width: '100%',
+        backgroundColor: 'white',
+        borderTop: `1px solid ${colors.border}`,
+        padding: '8px 0',
+        display: 'flex',
+        justifyContent: 'space-around',
+        boxShadow: '0 -2px 10px rgba(0,0,0,0.05)'
+      }}>
+        <button
+          onClick={() => setScreen(SCREENS.DASHBOARD)}
+          style={{
+            background: 'none',
+            border: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '8px 16px',
+            cursor: 'pointer',
+            color: screen === SCREENS.DASHBOARD ? colors.primary : colors.textMuted
+          }}
+        >
+          <span style={{ fontSize: '20px' }}>🏠</span>
+          <span style={{ fontSize: '11px', fontWeight: screen === SCREENS.DASHBOARD ? '600' : '400' }}>Home</span>
+        </button>
+
+        <button
+          onClick={() => setScreen(SCREENS.SCHEDULE_VISIT)}
+          style={{
+            background: 'none',
+            border: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '8px 16px',
+            cursor: 'pointer',
+            color: screen === SCREENS.SCHEDULE_VISIT ? colors.primary : colors.textMuted
+          }}
+        >
+          <span style={{ fontSize: '20px' }}>📅</span>
+          <span style={{ fontSize: '11px', fontWeight: screen === SCREENS.SCHEDULE_VISIT ? '600' : '400' }}>Schedule</span>
+        </button>
+
+        <button
+          onClick={() => setScreen(SCREENS.SYMPTOM_INTAKE)}
+          style={{
+            background: 'none',
+            border: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '8px 16px',
+            cursor: 'pointer',
+            color: screen === SCREENS.SYMPTOM_INTAKE ? colors.primary : colors.textMuted
+          }}
+        >
+          <span style={{ fontSize: '20px' }}>🩺</span>
+          <span style={{ fontSize: '11px', fontWeight: screen === SCREENS.SYMPTOM_INTAKE ? '600' : '400' }}>Symptoms</span>
+        </button>
+
+        <button
+          onClick={() => setScreen(SCREENS.MESSAGES)}
+          style={{
+            background: 'none',
+            border: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '8px 16px',
+            cursor: 'pointer',
+            color: screen === SCREENS.MESSAGES ? colors.primary : colors.textMuted,
+            position: 'relative'
+          }}
+        >
+          <span style={{ fontSize: '20px' }}>💬</span>
+          <span style={{ fontSize: '11px', fontWeight: screen === SCREENS.MESSAGES ? '600' : '400' }}>Messages</span>
+          <span style={{
+            position: 'absolute',
+            top: '6px',
+            right: '10px',
+            width: '8px',
+            height: '8px',
+            backgroundColor: colors.alert,
+            borderRadius: '50%'
+          }}></span>
+        </button>
+      </div>
+
+      {/* ADD PADDING AT BOTTOM FOR NAV */}
+      <div style={{ height: '80px' }}></div>
     </div>
   );
 }
