@@ -84,7 +84,7 @@ DO NOT include any text outside the JSON structure. DO NOT use markdown code blo
         "anthropic-version": "2023-06-01"
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-4-20241022",
         max_tokens: 4000,
         messages: [{
           role: "user",
@@ -96,10 +96,16 @@ DO NOT include any text outside the JSON structure. DO NOT use markdown code blo
     // Handle API errors
     if (!anthropicResponse.ok) {
       const errorData = await anthropicResponse.json().catch(() => ({}));
-      console.error("Claude API error:", anthropicResponse.status, errorData);
+      console.error("Claude API error:", {
+        status: anthropicResponse.status,
+        statusText: anthropicResponse.statusText,
+        error: errorData,
+        modelUsed: "claude-sonnet-4-20241022"
+      });
       return res.status(anthropicResponse.status).json({ 
         error: 'Claude API request failed',
-        details: errorData 
+        details: errorData,
+        status: anthropicResponse.status
       });
     }
 
