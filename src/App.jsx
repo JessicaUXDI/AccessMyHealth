@@ -1,31 +1,64 @@
-import React, { useState } from 'react';
+       import React, { useState } from 'react';
+import { 
+  Home, 
+  Calendar, 
+  FileText, 
+  MessageSquare, 
+  ChevronLeft, 
+  ChevronRight, 
+  TrendingUp, 
+  Brain, 
+  Heart, 
+  Bone, 
+  Leaf, 
+  Zap,
+  Lock,
+  CheckCircle,
+  RotateCcw,
+  X
+} from 'lucide-react';
+import { Home, Calendar, FileText, MessageSquare, ChevronLeft, ChevronRight, AlertCircle, CheckCircle, TrendingUp, Activity, Heart, Brain, Bone, Leaf, Zap } from 'lucide-react';
 
-// Design System
+// Design System - Updated to Style Guide v1.0
 const colors = {
-  primary: '#4A7C7E',
-  primaryLight: '#6B9B9D',
-  primaryDark: '#3A6365',
-  accent: '#D4896A',
-  accentLight: '#E9A88A',
-  success: '#5B9A6F',
-  warning: '#D4A84A',
-  alert: '#C75D5D',
-  surface: '#FAFBFC',
+  primary: '#5B4FE8',
+  primaryDark: '#4A3FD1',
+  primaryLight: '#8B82F2',
+  secondary: '#10B981',
+  secondaryLight: '#34D399',
+  background: '#F9FAFB',
   card: '#FFFFFF',
-  text: '#2D3142',
-  textMuted: '#6B7280',
-  textLight: '#9CA3AF',
   border: '#E5E7EB',
-  divider: '#F3F4F6',
+  borderLight: '#F3F4F6',
+  text: '#000000',
+  textSecondary: '#4B5563',
+  textTertiary: '#9CA3AF',
+  warning: '#F59E0B',
+  alert: '#EF4444',
+  success: '#10B981',
 };
 
 const healthSystems = {
-  hormones: { icon: '🌸', name: 'Hormones & Cycles', status: 'insight', statusText: 'New insight available', completion: 75, color: colors.accent },
-  mindbody: { icon: '🧠', name: 'Mind & Mood', status: 'good', statusText: 'Stable', completion: 85, color: colors.primary },
-  cardiovascular: { icon: '❤️', name: 'Heart Health', status: 'good', statusText: 'On track', completion: 90, color: colors.success },
-  musculoskeletal: { icon: '🦴', name: 'Bones & Joints', status: 'attention', statusText: 'Check-in needed', completion: 60, color: colors.warning },
-  digestion: { icon: '🌿', name: 'Digestion', status: 'good', statusText: 'Normal', completion: 88, color: colors.success },
-  activity: { icon: '⚡', name: 'Activity & Rest', status: 'good', statusText: 'Meeting goals', completion: 72, color: colors.primary },
+  hormones: { icon: 'TrendingUp', name: 'Hormones & Cycles', needsReview: true, reviewReason: 'New pattern detected', completion: 75, color: colors.primary },
+  mindbody: { icon: 'Brain', name: 'Mind & Mood', needsReview: false, completion: 85, color: colors.secondary },
+  cardiovascular: { icon: 'Heart', name: 'Heart Health', needsReview: false, completion: 90, color: colors.secondary },
+  musculoskeletal: { icon: 'Bone', name: 'Bones & Joints', needsReview: true, reviewReason: 'Check-in needed', completion: 60, color: colors.warning },
+  digestion: { icon: 'Leaf', name: 'Digestion', needsReview: false, completion: 88, color: colors.secondary },
+  activity: { icon: 'Zap', name: 'Activity & Rest', needsReview: false, completion: 72, color: colors.primary },
+};
+
+// Icon Renderer Helper
+const renderIcon = (iconName, size = 22, color = colors.primary, strokeWidth = 2) => {
+  const icons = {
+    'TrendingUp': <TrendingUp size={size} color={color} strokeWidth={strokeWidth} />,
+    'Brain': <Brain size={size} color={color} strokeWidth={strokeWidth} />,
+    'Heart': <Heart size={size} color={color} strokeWidth={strokeWidth} />,
+    'Bone': <Bone size={size} color={color} strokeWidth={strokeWidth} />,
+    'Leaf': <Leaf size={size} color={color} strokeWidth={strokeWidth} />,
+    'Zap': <Zap size={size} color={color} strokeWidth={strokeWidth} />,
+    'Calendar': <Calendar size={size} color={color} strokeWidth={strokeWidth} />,
+  };
+  return icons[iconName] || null;
 };
 
 const hormoneData = [
@@ -40,8 +73,8 @@ const hormoneData = [
 const differentialDiagnosis = [
   { name: 'Perimenopause', confidence: 87, criteria: ['Age 40-55', 'Cycle changes', 'Estrogen decline pattern', 'Symptom cluster match'], color: colors.primary },
   { name: 'Thyroid Dysfunction', confidence: 42, criteria: ['Fatigue', 'Mood changes', 'Weight changes'], needsRuleOut: true, color: colors.warning },
-  { name: 'Vitamin D Deficiency', confidence: 35, criteria: ['Fatigue', 'Mood changes', 'Joint discomfort'], color: colors.textMuted },
-  { name: 'Iron Deficiency Anemia', confidence: 28, criteria: ['Fatigue', 'Brain fog'], color: colors.textMuted },
+  { name: 'Vitamin D Deficiency', confidence: 35, criteria: ['Fatigue', 'Mood changes', 'Joint discomfort'], color: colors.textSecondary },
+  { name: 'Iron Deficiency Anemia', confidence: 28, criteria: ['Fatigue', 'Brain fog'], color: colors.textSecondary },
   { name: 'Primary Ovarian Insufficiency', confidence: 15, criteria: ['Hormone pattern'], needsRuleOut: true, color: colors.alert },
 ];
 
@@ -468,7 +501,7 @@ const healthSystemDetails = {
 const StatusBadge = ({ status, text }) => {
   const statusColors = {
     good: { bg: `${colors.success}15`, text: colors.success },
-    insight: { bg: `${colors.accent}15`, text: colors.accent },
+    insight: { bg: `${colors.primary}15`, text: colors.primary },
     attention: { bg: `${colors.warning}15`, text: colors.warning },
   };
   const style = statusColors[status] || statusColors.good;
@@ -495,7 +528,7 @@ const ProgressRing = ({ progress, color, size = 44 }) => {
   
   return (
     <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-      <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke={colors.divider} strokeWidth={strokeWidth} />
+      <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke={colors.borderLight} strokeWidth={strokeWidth} />
       <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth} strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" />
       <text x={size/2} y={size/2} textAnchor="middle" dy="4px" style={{ transform: 'rotate(90deg)', transformOrigin: 'center', fontSize: '11px', fontWeight: '600', fill: colors.text }}>{progress}%</text>
     </svg>
@@ -524,16 +557,16 @@ const HormoneChart = () => {
   return (
     <svg width={width} height={height} style={{ overflow: 'visible' }}>
       {[0, 0.5, 1].map((ratio, i) => (
-        <line key={i} x1={padding.left} y1={padding.top + ratio * chartHeight} x2={width - padding.right} y2={padding.top + ratio * chartHeight} stroke={colors.divider} strokeDasharray="4,4" />
+        <line key={i} x1={padding.left} y1={padding.top + ratio * chartHeight} x2={width - padding.right} y2={padding.top + ratio * chartHeight} stroke={colors.borderLight} strokeDasharray="4,4" />
       ))}
-      <path d={pathFromPoints(estrogenPoints)} fill="none" stroke={colors.accent} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={pathFromPoints(estrogenPoints)} fill="none" stroke={colors.primary} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
       <path d={pathFromPoints(progesteronePoints)} fill="none" stroke={colors.primary} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-      {estrogenPoints.map((p, i) => <circle key={`e-${i}`} cx={p.x} cy={p.y} r="4" fill={colors.accent} />)}
+      {estrogenPoints.map((p, i) => <circle key={`e-${i}`} cx={p.x} cy={p.y} r="4" fill={colors.primary} />)}
       {progesteronePoints.map((p, i) => <circle key={`p-${i}`} cx={p.x} cy={p.y} r="4" fill={colors.primary} />)}
       {hormoneData.map((d, i) => (
-        <text key={i} x={padding.left + (i / (hormoneData.length - 1)) * chartWidth} y={height - 8} textAnchor="middle" style={{ fontSize: '10px', fill: colors.textMuted }}>{d.month}</text>
+        <text key={i} x={padding.left + (i / (hormoneData.length - 1)) * chartWidth} y={height - 8} textAnchor="middle" style={{ fontSize: '10px', fill: colors.textSecondary }}>{d.month}</text>
       ))}
-      <circle cx={padding.left} cy={8} r="4" fill={colors.accent} />
+      <circle cx={padding.left} cy={8} r="4" fill={colors.primary} />
       <text x={padding.left + 10} y={12} style={{ fontSize: '10px', fill: colors.text }}>Estrogen</text>
       <circle cx={padding.left + 80} cy={8} r="4" fill={colors.primary} />
       <text x={padding.left + 90} y={12} style={{ fontSize: '10px', fill: colors.text }}>Progesterone</text>
@@ -543,7 +576,7 @@ const HormoneChart = () => {
 
 const ConfidenceBar = ({ confidence, color }) => (
   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-    <div style={{ flex: 1, height: '8px', backgroundColor: colors.divider, borderRadius: '4px', overflow: 'hidden' }}>
+    <div style={{ flex: 1, height: '8px', backgroundColor: colors.borderLight, borderRadius: '4px', overflow: 'hidden' }}>
       <div style={{ width: `${confidence}%`, height: '100%', backgroundColor: color, borderRadius: '4px', transition: 'width 0.5s ease' }} />
     </div>
     <span style={{ fontSize: '13px', fontWeight: '600', color: color, minWidth: '40px' }}>{confidence}%</span>
@@ -551,31 +584,112 @@ const ConfidenceBar = ({ confidence, color }) => (
 );
 
 const Header = ({ title, subtitle, showBack, onBack }) => (
-  <div style={{ background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryDark} 100%)`, padding: showBack ? '16px 20px 20px' : '24px 20px 28px', color: 'white' }}>
+  <div style={{ 
+    background: colors.primary, 
+    color: '#FFFFFF', 
+    padding: showBack ? '20px 24px 24px' : '28px 24px',
+  }}>
     {showBack && (
-      <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'white', fontSize: '14px', cursor: 'pointer', padding: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '6px', opacity: 0.9 }}>← Back</button>
+      <button 
+        onClick={onBack} 
+        style={{ 
+          background: 'none', 
+          border: 'none', 
+          color: '#FFFFFF', 
+          cursor: 'pointer', 
+          padding: '8px 0', 
+          marginBottom: '12px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '4px', 
+          fontSize: '15px', 
+          fontWeight: '500' 
+        }}
+      >
+        <ChevronLeft size={20} /> Back
+      </button>
     )}
-    <h1 style={{ margin: 0, fontSize: showBack ? '20px' : '24px', fontWeight: '600' }}>{title}</h1>
-    {subtitle && <p style={{ margin: '4px 0 0', fontSize: '14px', opacity: 0.85 }}>{subtitle}</p>}
+    <h1 style={{ margin: 0, fontSize: '24px', fontWeight: '600', lineHeight: '1.3', color: '#FFFFFF' }}>{title}</h1>
+    {subtitle && <p style={{ margin: '4px 0 0', fontSize: '14px', opacity: 0.9, fontWeight: '400' }}>{subtitle}</p>}
   </div>
 );
 
 const Card = ({ children, style = {}, onClick }) => (
-  <div onClick={onClick} style={{ backgroundColor: colors.card, borderRadius: '16px', border: `1px solid ${colors.border}`, padding: '16px', cursor: onClick ? 'pointer' : 'default', transition: 'box-shadow 0.2s ease', ...style }}>{children}</div>
+  <div 
+    onClick={onClick} 
+    style={{ 
+      backgroundColor: colors.card, 
+      borderRadius: '12px', 
+      border: `1px solid ${colors.border}`, 
+      padding: '20px', 
+      cursor: onClick ? 'pointer' : 'default',
+      transition: 'border-color 0.2s ease',
+      ...style 
+    }}
+    onMouseEnter={(e) => onClick && (e.currentTarget.style.borderColor = colors.primary)}
+    onMouseLeave={(e) => onClick && (e.currentTarget.style.borderColor = colors.border)}
+  >
+    {children}
+  </div>
 );
 
 const Button = ({ children, variant = 'primary', onClick, style = {}, disabled }) => {
   const variants = {
-    primary: { bg: colors.primary, color: 'white' },
-    accent: { bg: colors.accent, color: 'white' },
-    outline: { bg: 'transparent', color: colors.primary, border: `2px solid ${colors.primary}` },
-    ghost: { bg: colors.divider, color: colors.text }
+    primary: { 
+      bg: colors.primary, 
+      color: '#FFFFFF', 
+      border: 'none',
+      minHeight: '48px',
+      padding: '14px 24px'
+    },
+    accent: { 
+      bg: colors.primary, 
+      color: '#FFFFFF', 
+      border: 'none',
+      minHeight: '48px',
+      padding: '14px 24px'
+    },
+    outline: { 
+      bg: 'transparent', 
+      color: colors.text, 
+      border: `2px solid ${colors.primary}`,
+      minHeight: '48px',
+      padding: '14px 24px'
+    },
+    ghost: { 
+      bg: colors.background, 
+      color: colors.text, 
+      border: `1px solid ${colors.border}`,
+      minHeight: '48px',
+      padding: '14px 24px'
+    }
   };
-  const v = variants[variant];
+  
+  const v = variants[variant] || variants.primary;
   
   return (
-    <button onClick={onClick} disabled={disabled} style={{ width: '100%', padding: '14px 20px', backgroundColor: disabled ? colors.divider : v.bg, color: disabled ? colors.textMuted : v.color, border: v.border || 'none', borderRadius: '12px', fontSize: '15px', fontWeight: '600', cursor: disabled ? 'not-allowed' : 'pointer', ...style }}>{children}</button>
+    <button 
+      onClick={onClick} 
+      disabled={disabled} 
+      style={{ 
+        width: '100%', 
+        padding: v.padding,
+        minHeight: v.minHeight,
+        backgroundColor: disabled ? colors.background : v.bg, 
+        color: disabled ? colors.textTertiary : v.color, 
+        border: disabled ? `1px solid ${colors.border}` : v.border, 
+        borderRadius: '8px', 
+        fontSize: '15px', 
+        fontWeight: '600', 
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        transition: 'all 0.2s ease',
+        ...style 
+      }}
+    >
+      {children}
+    </button>
   );
+};
 };
 
 export default function PeriHealthApp() {
@@ -664,26 +778,26 @@ export default function PeriHealthApp() {
   };
 
   return (
-    <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', backgroundColor: colors.surface, minHeight: '100vh', maxWidth: '420px', margin: '0 auto', boxShadow: '0 0 40px rgba(0,0,0,0.1)' }}>
+    <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', backgroundColor: colors.background, minHeight: '100vh', maxWidth: '420px', margin: '0 auto', boxShadow: '0 0 40px rgba(0,0,0,0.1)' }}>
       {screen === SCREENS.DASHBOARD && (
         <div>
           <Header title="Good morning, Jessica" subtitle="Your wellbeing at a glance" />
           <div style={{ padding: '20px' }}>
             <Card style={{ marginBottom: '16px', background: `linear-gradient(135deg, ${colors.success}10 0%, ${colors.primary}10 100%)` }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: `${colors.success}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px' }}>✨</div>
+                <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: `${colors.success}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px' }}></div>
                 <div style={{ flex: 1 }}>
                   <h3 style={{ margin: '0 0 4px', fontSize: '16px', color: colors.text }}>Overall: Good Health</h3>
-                  <p style={{ margin: 0, fontSize: '13px', color: colors.textMuted }}>1 new insight to optimize your wellbeing</p>
+                  <p style={{ margin: 0, fontSize: '13px', color: colors.textSecondary }}>1 new insight to optimize your wellbeing</p>
                 </div>
               </div>
             </Card>
 
             {/* Upcoming Appointment */}
-            <Card onClick={() => setScreen(SCREENS.APPOINTMENT)} style={{ marginBottom: '20px', border: `2px solid ${colors.accent}`, background: `${colors.accent}08` }}>
+            <Card onClick={() => setScreen(SCREENS.APPOINTMENT)} style={{ marginBottom: '20px', border: `2px solid ${colors.primary}`, background: `${colors.primary}08` }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                 <div>
-                  <p style={{ margin: '0 0 4px', fontSize: '12px', color: colors.accent, fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Upcoming Appointment</p>
+                  <p style={{ margin: '0 0 4px', fontSize: '12px', color: colors.primary, fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Upcoming Appointment</p>
                   <h3 style={{ margin: 0, fontSize: '17px', color: colors.text }}>
                     {bookedAppointment ? bookedAppointment.type : upcomingAppointment.type}
                   </h3>
@@ -702,11 +816,11 @@ export default function PeriHealthApp() {
                       padding: '4px',
                       display: 'flex',
                       alignItems: 'center',
-                      color: colors.textMuted
+                      color: colors.textSecondary
                     }}
                     title="Reschedule"
                   >
-                    🔄
+                    <RotateCcw size={18} />
                   </button>
                   <button
                     onClick={(e) => {
@@ -725,26 +839,26 @@ export default function PeriHealthApp() {
                     }}
                     title="Cancel"
                   >
-                    ✕
+                    <X size={18} />
                   </button>
-                  <span style={{ fontSize: '24px' }}>📅</span>
+                  {renderIcon('Calendar', 24, colors.primary)}
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
                 <div>
-                  <p style={{ margin: 0, fontSize: '12px', color: colors.textMuted }}>Date</p>
+                  <p style={{ margin: 0, fontSize: '12px', color: colors.textSecondary }}>Date</p>
                   <p style={{ margin: '2px 0 0', fontSize: '14px', color: colors.text, fontWeight: '500' }}>
                     {bookedAppointment ? bookedAppointment.date : upcomingAppointment.date}
                   </p>
                 </div>
                 <div>
-                  <p style={{ margin: 0, fontSize: '12px', color: colors.textMuted }}>Time</p>
+                  <p style={{ margin: 0, fontSize: '12px', color: colors.textSecondary }}>Time</p>
                   <p style={{ margin: '2px 0 0', fontSize: '14px', color: colors.text, fontWeight: '500' }}>
                     {bookedAppointment ? bookedAppointment.time : upcomingAppointment.time}
                   </p>
                 </div>
                 <div>
-                  <p style={{ margin: 0, fontSize: '12px', color: colors.textMuted }}>Provider</p>
+                  <p style={{ margin: 0, fontSize: '12px', color: colors.textSecondary }}>Provider</p>
                   <p style={{ margin: '2px 0 0', fontSize: '14px', color: colors.text, fontWeight: '500' }}>
                     {bookedAppointment ? bookedAppointment.provider : upcomingAppointment.provider}
                   </p>
@@ -752,20 +866,20 @@ export default function PeriHealthApp() {
               </div>
               <div style={{ backgroundColor: upcomingAppointment.prepared ? `${colors.success}15` : `${colors.warning}15`, padding: '10px 14px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: '13px', color: upcomingAppointment.prepared ? colors.success : colors.warning, fontWeight: '500' }}>
-                  {upcomingAppointment.prepared ? '✓ Visit prepared' : '⚡ Tap to prepare for your visit'}
+                  {upcomingAppointment.prepared ? 'Visit prepared' : 'Tap to prepare for your visit'}
                 </span>
-                <span style={{ color: colors.accent }}>→</span>
+                <span style={{ color: colors.primary }}>→</span>
               </div>
             </Card>
 
             <Card onClick={() => setScreen(SCREENS.INSIGHT)} style={{ marginBottom: '20px', cursor: 'pointer' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: `${colors.accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px' }}>💡</div>
+                <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: `${colors.primary}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px' }}>💡</div>
                 <div style={{ flex: 1 }}>
                   <h4 style={{ margin: '0 0 4px', fontSize: '15px', color: colors.text }}>New Insight: Hormone Trends</h4>
-                  <p style={{ margin: 0, fontSize: '13px', color: colors.textMuted }}>Changes detected in your estrogen and progesterone</p>
+                  <p style={{ margin: 0, fontSize: '13px', color: colors.textSecondary }}>Changes detected in your estrogen and progesterone</p>
                 </div>
-                <span style={{ color: colors.accent, fontSize: '18px' }}>→</span>
+                <span style={{ color: colors.primary, fontSize: '18px' }}>→</span>
               </div>
             </Card>
 
@@ -781,11 +895,11 @@ export default function PeriHealthApp() {
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-                    <span style={{ fontSize: '24px' }}>{system.icon}</span>
+                    {renderIcon(system.icon, 24, system.color)}
                     <ProgressRing progress={system.completion} color={system.color} size={38} />
                   </div>
                   <h4 style={{ margin: '0 0 6px', fontSize: '13px', color: colors.text, fontWeight: '600' }}>{system.name}</h4>
-                  <StatusBadge status={system.status} text={system.statusText} />
+                  <StatusBadge status={system.status} text={system.reviewReason} />
                 </Card>
               ))}
             </div>
@@ -800,7 +914,7 @@ export default function PeriHealthApp() {
           <div style={{ padding: '20px' }}>
             <Card style={{ marginBottom: '16px' }}>
               <h3 style={{ margin: '0 0 4px', fontSize: '15px', color: colors.text }}>6-Month Hormone Trend</h3>
-              <p style={{ margin: '0 0 16px', fontSize: '12px', color: colors.textMuted }}>Both values within normal limits, but declining</p>
+              <p style={{ margin: '0 0 16px', fontSize: '12px', color: colors.textSecondary }}>Both values within normal limits, but declining</p>
               <HormoneChart />
               <div style={{ marginTop: '16px', padding: '12px', backgroundColor: `${colors.warning}10`, borderRadius: '8px', borderLeft: `3px solid ${colors.warning}` }}>
                 <p style={{ margin: 0, fontSize: '13px', color: colors.text, lineHeight: '1.5' }}><strong>What this means:</strong> Your hormone levels are still within normal range, but the declining pattern over 6 months may explain some of your recent symptoms.</p>
@@ -814,7 +928,7 @@ export default function PeriHealthApp() {
                 <span style={{ fontSize: '20px' }}>💊</span>
                 <div>
                   <h4 style={{ margin: '0 0 4px', fontSize: '14px', color: colors.text }}>Hormone Replacement Therapy</h4>
-                  <p style={{ margin: 0, fontSize: '13px', color: colors.textMuted, lineHeight: '1.5' }}>Low-dose estrogen may help with sleep, mood, and cognitive symptoms. Options include patches, pills, or gels.</p>
+                  <p style={{ margin: 0, fontSize: '13px', color: colors.textSecondary, lineHeight: '1.5' }}>Low-dose estrogen may help with sleep, mood, and cognitive symptoms. Options include patches, pills, or gels.</p>
                 </div>
               </div>
             </Card>
@@ -824,7 +938,7 @@ export default function PeriHealthApp() {
                 <span style={{ fontSize: '20px' }}>🥗</span>
                 <div>
                   <h4 style={{ margin: '0 0 4px', fontSize: '14px', color: colors.text }}>Nutrition Optimization</h4>
-                  <p style={{ margin: 0, fontSize: '13px', color: colors.textMuted, lineHeight: '1.5' }}>Phytoestrogen-rich foods and specific nutrients may support hormone balance naturally.</p>
+                  <p style={{ margin: 0, fontSize: '13px', color: colors.textSecondary, lineHeight: '1.5' }}>Phytoestrogen-rich foods and specific nutrients may support hormone balance naturally.</p>
                 </div>
               </div>
             </Card>
@@ -834,12 +948,12 @@ export default function PeriHealthApp() {
                 <span style={{ fontSize: '20px' }}>🏃‍♀️</span>
                 <div>
                   <h4 style={{ margin: '0 0 4px', fontSize: '14px', color: colors.text }}>Activity Adjustments</h4>
-                  <p style={{ margin: 0, fontSize: '13px', color: colors.textMuted, lineHeight: '1.5' }}>Strength training and specific exercise patterns can influence hormone levels and symptom management.</p>
+                  <p style={{ margin: 0, fontSize: '13px', color: colors.textSecondary, lineHeight: '1.5' }}>Strength training and specific exercise patterns can influence hormone levels and symptom management.</p>
                 </div>
               </div>
             </Card>
 
-            <p style={{ fontSize: '12px', color: colors.textMuted, textAlign: 'center', marginBottom: '16px' }}>A note has been sent to Dr. Chen about these findings</p>
+            <p style={{ fontSize: '12px', color: colors.textSecondary, textAlign: 'center', marginBottom: '16px' }}>A note has been sent to Dr. Chen about these findings</p>
             <Button onClick={() => setScreen(SCREENS.APPOINTMENT)}>Prepare for Your Appointment →</Button>
           </div>
         </div>
@@ -854,7 +968,7 @@ export default function PeriHealthApp() {
                 <div style={{ width: '50px', height: '50px', borderRadius: '50%', backgroundColor: colors.primaryLight, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '20px', fontWeight: '600' }}>SC</div>
                 <div>
                   <h3 style={{ margin: '0 0 2px', fontSize: '16px', color: colors.text }}>{upcomingAppointment.provider}</h3>
-                  <p style={{ margin: 0, fontSize: '13px', color: colors.textMuted }}>OB-GYN, Menopause Specialist</p>
+                  <p style={{ margin: 0, fontSize: '13px', color: colors.textSecondary }}>OB-GYN, Menopause Specialist</p>
                 </div>
               </div>
             </Card>
@@ -868,10 +982,10 @@ export default function PeriHealthApp() {
               <Card style={{ marginBottom: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                   <h4 style={{ margin: 0, fontSize: '14px', color: colors.text }}>Your Symptoms & Concerns</h4>
-                  <span style={{ fontSize: '12px', color: colors.textMuted }}>{userConcerns.length} added</span>
+                  <span style={{ fontSize: '12px', color: colors.textSecondary }}>{userConcerns.length} added</span>
                 </div>
                 {userConcerns.map((concern, i) => (
-                  <div key={i} style={{ padding: '10px 12px', backgroundColor: colors.divider, borderRadius: '8px', marginBottom: '8px', fontSize: '13px', color: colors.text }}>{concern}</div>
+                  <div key={i} style={{ padding: '10px 12px', backgroundColor: colors.borderLight, borderRadius: '8px', marginBottom: '8px', fontSize: '13px', color: colors.text }}>{concern}</div>
                 ))}
               </Card>
             )}
@@ -880,10 +994,10 @@ export default function PeriHealthApp() {
               <Card style={{ marginBottom: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                   <h4 style={{ margin: 0, fontSize: '14px', color: colors.text }}>Your Questions</h4>
-                  <span style={{ fontSize: '12px', color: colors.textMuted }}>{userQuestions.length} added</span>
+                  <span style={{ fontSize: '12px', color: colors.textSecondary }}>{userQuestions.length} added</span>
                 </div>
                 {userQuestions.map((q, i) => (
-                  <div key={i} style={{ padding: '10px 12px', backgroundColor: colors.divider, borderRadius: '8px', marginBottom: '8px', fontSize: '13px', color: colors.text }}>{q}</div>
+                  <div key={i} style={{ padding: '10px 12px', backgroundColor: colors.borderLight, borderRadius: '8px', marginBottom: '8px', fontSize: '13px', color: colors.text }}>{q}</div>
                 ))}
               </Card>
             )}
@@ -902,7 +1016,7 @@ export default function PeriHealthApp() {
           <div style={{ padding: '20px' }}>
             <Card style={{ marginBottom: '16px' }}>
               <h4 style={{ margin: '0 0 12px', fontSize: '15px', color: colors.text }}>Symptoms & Concerns</h4>
-              <p style={{ margin: '0 0 12px', fontSize: '13px', color: colors.textMuted }}>What have you been experiencing? Be specific about when symptoms occur and how they affect your daily life.</p>
+              <p style={{ margin: '0 0 12px', fontSize: '13px', color: colors.textSecondary }}>What have you been experiencing? Be specific about when symptoms occur and how they affect your daily life.</p>
               
               <textarea
                 value={newConcern}
@@ -919,16 +1033,16 @@ export default function PeriHealthApp() {
                   }
                 }}
                 disabled={!newConcern.trim()}
-                style={{ marginTop: '10px', padding: '10px 16px', backgroundColor: newConcern.trim() ? colors.accent : colors.divider, color: newConcern.trim() ? 'white' : colors.textMuted, border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: newConcern.trim() ? 'pointer' : 'not-allowed' }}
+                style={{ marginTop: '10px', padding: '10px 16px', backgroundColor: newConcern.trim() ? colors.primary : colors.borderLight, color: newConcern.trim() ? 'white' : colors.textSecondary, border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: newConcern.trim() ? 'pointer' : 'not-allowed' }}
               >+ Add Concern</button>
               
               {userConcerns.length > 0 && (
                 <div style={{ marginTop: '12px' }}>
                   {userConcerns.map((c, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '10px', backgroundColor: colors.divider, borderRadius: '8px', marginBottom: '8px' }}>
-                      <span style={{ color: colors.success }}>✓</span>
+                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '10px', backgroundColor: colors.borderLight, borderRadius: '8px', marginBottom: '8px' }}>
+                      <span style={{ color: colors.success }}></span>
                       <span style={{ flex: 1, fontSize: '13px', color: colors.text }}>{c}</span>
-                      <button onClick={() => setUserConcerns(userConcerns.filter((_, idx) => idx !== i))} style={{ background: 'none', border: 'none', color: colors.textMuted, cursor: 'pointer', fontSize: '16px' }}>×</button>
+                      <button onClick={() => setUserConcerns(userConcerns.filter((_, idx) => idx !== i))} style={{ background: 'none', border: 'none', color: colors.textSecondary, cursor: 'pointer', fontSize: '16px' }}>×</button>
                     </div>
                   ))}
                 </div>
@@ -937,7 +1051,7 @@ export default function PeriHealthApp() {
 
             <Card style={{ marginBottom: '20px' }}>
               <h4 style={{ margin: '0 0 12px', fontSize: '15px', color: colors.text }}>Questions for Your Doctor</h4>
-              <p style={{ margin: '0 0 12px', fontSize: '13px', color: colors.textMuted }}>What do you want to understand better? What options do you want to explore?</p>
+              <p style={{ margin: '0 0 12px', fontSize: '13px', color: colors.textSecondary }}>What do you want to understand better? What options do you want to explore?</p>
               
               <textarea
                 value={newQuestion}
@@ -954,16 +1068,16 @@ export default function PeriHealthApp() {
                   }
                 }}
                 disabled={!newQuestion.trim()}
-                style={{ marginTop: '10px', padding: '10px 16px', backgroundColor: newQuestion.trim() ? colors.primary : colors.divider, color: newQuestion.trim() ? 'white' : colors.textMuted, border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: newQuestion.trim() ? 'pointer' : 'not-allowed' }}
+                style={{ marginTop: '10px', padding: '10px 16px', backgroundColor: newQuestion.trim() ? colors.primary : colors.borderLight, color: newQuestion.trim() ? 'white' : colors.textSecondary, border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: '500', cursor: newQuestion.trim() ? 'pointer' : 'not-allowed' }}
               >+ Add Question</button>
               
               {userQuestions.length > 0 && (
                 <div style={{ marginTop: '12px' }}>
                   {userQuestions.map((q, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '10px', backgroundColor: colors.divider, borderRadius: '8px', marginBottom: '8px' }}>
+                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '10px', backgroundColor: colors.borderLight, borderRadius: '8px', marginBottom: '8px' }}>
                       <span style={{ color: colors.primary }}>?</span>
                       <span style={{ flex: 1, fontSize: '13px', color: colors.text }}>{q}</span>
-                      <button onClick={() => setUserQuestions(userQuestions.filter((_, idx) => idx !== i))} style={{ background: 'none', border: 'none', color: colors.textMuted, cursor: 'pointer', fontSize: '16px' }}>×</button>
+                      <button onClick={() => setUserQuestions(userQuestions.filter((_, idx) => idx !== i))} style={{ background: 'none', border: 'none', color: colors.textSecondary, cursor: 'pointer', fontSize: '16px' }}>×</button>
                     </div>
                   ))}
                 </div>
@@ -992,7 +1106,7 @@ export default function PeriHealthApp() {
               <Card key={i} style={{ marginBottom: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: i === 0 ? colors.primary : colors.divider, color: i === 0 ? 'white' : colors.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600' }}>{i + 1}</span>
+                    <span style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: i === 0 ? colors.primary : colors.borderLight, color: i === 0 ? 'white' : colors.textSecondary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '600' }}>{i + 1}</span>
                     <h4 style={{ margin: 0, fontSize: '15px', color: colors.text }}>{dx.name}</h4>
                   </div>
                   {dx.needsRuleOut && (
@@ -1003,17 +1117,17 @@ export default function PeriHealthApp() {
                 <ConfidenceBar confidence={dx.confidence} color={dx.color} />
                 
                 <div style={{ marginTop: '10px' }}>
-                  <p style={{ margin: '0 0 6px', fontSize: '11px', color: colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Supporting Criteria</p>
+                  <p style={{ margin: '0 0 6px', fontSize: '11px', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Supporting Criteria</p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                     {dx.criteria.map((c, j) => (
-                      <span key={j} style={{ padding: '4px 10px', backgroundColor: colors.divider, borderRadius: '12px', fontSize: '11px', color: colors.text }}>{c}</span>
+                      <span key={j} style={{ padding: '4px 10px', backgroundColor: colors.borderLight, borderRadius: '12px', fontSize: '11px', color: colors.text }}>{c}</span>
                     ))}
                   </div>
                 </div>
               </Card>
             ))}
 
-            <div style={{ padding: '16px', backgroundColor: `${colors.primary}08`, borderRadius: '12px', marginBottom: '16px' }}>
+            <div style={{ padding: '20px', backgroundColor: `${colors.primary}08`, borderRadius: '12px', marginBottom: '16px' }}>
               <p style={{ margin: 0, fontSize: '13px', color: colors.text, lineHeight: '1.6' }}><strong>Your doctor will see:</strong> The same ranked list, plus clinical decision-making criteria, screening protocols, and assessment questions to confirm or rule out each condition.</p>
             </div>
 
@@ -1028,16 +1142,16 @@ export default function PeriHealthApp() {
           <div style={{ padding: '20px' }}>
             <Card style={{ marginBottom: '16px', backgroundColor: `${colors.success}08`, border: `1px solid ${colors.success}` }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                <span style={{ fontSize: '20px' }}>✓</span>
+                <span style={{ fontSize: '20px' }}></span>
                 <h4 style={{ margin: 0, fontSize: '15px', color: colors.text }}>Working Diagnosis: Perimenopause</h4>
               </div>
-              <p style={{ margin: 0, fontSize: '13px', color: colors.textMuted, lineHeight: '1.5' }}>Based on: Age, symptom pattern, hormone levels, and ruling out other conditions</p>
+              <p style={{ margin: 0, fontSize: '13px', color: colors.textSecondary, lineHeight: '1.5' }}>Based on: Age, symptom pattern, hormone levels, and ruling out other conditions</p>
             </Card>
 
             <Card style={{ marginBottom: '16px' }}>
               <h4 style={{ margin: '0 0 12px', fontSize: '14px', color: colors.text }}>Evidence Summary</h4>
               <div style={{ marginBottom: '12px' }}>
-                <p style={{ margin: '0 0 6px', fontSize: '12px', color: colors.success, fontWeight: '600' }}>✓ Inclusion Criteria Met:</p>
+                <p style={{ margin: '0 0 6px', fontSize: '12px', color: colors.success, fontWeight: '600' }}>Inclusion Criteria Met:</p>
                 <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: colors.text, lineHeight: '1.6' }}>
                   <li>Irregular cycle patterns in last 6 months</li>
                   <li>Declining estrogen trend (within normal)</li>
@@ -1046,8 +1160,8 @@ export default function PeriHealthApp() {
                 </ul>
               </div>
               <div>
-                <p style={{ margin: '0 0 6px', fontSize: '12px', color: colors.textMuted, fontWeight: '600' }}>− Exclusion Criteria:</p>
-                <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: colors.textMuted, lineHeight: '1.6' }}>
+                <p style={{ margin: '0 0 6px', fontSize: '12px', color: colors.textSecondary, fontWeight: '600' }}>− Exclusion Criteria:</p>
+                <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: colors.textSecondary, lineHeight: '1.6' }}>
                   <li>Thyroid dysfunction (pending confirmation)</li>
                   <li>Primary ovarian insufficiency (age, FSH levels)</li>
                 </ul>
@@ -1055,7 +1169,7 @@ export default function PeriHealthApp() {
             </Card>
 
             <h3 style={{ margin: '0 0 12px', fontSize: '15px', color: colors.text }}>Treatment Plan</h3>
-            <p style={{ margin: '0 0 12px', fontSize: '13px', color: colors.textMuted }}>Review each item. Toggle off any you want to discuss further.</p>
+            <p style={{ margin: '0 0 12px', fontSize: '13px', color: colors.textSecondary }}>Review each item. Toggle off any you want to discuss further.</p>
 
             {planItems.map((item) => (
               <Card key={item.id} style={{ marginBottom: '10px', padding: '14px' }}>
@@ -1063,10 +1177,10 @@ export default function PeriHealthApp() {
                   <button
                     onClick={() => setPlanItems(planItems.map(p => p.id === item.id ? { ...p, approved: !p.approved } : p))}
                     style={{ width: '24px', height: '24px', borderRadius: '6px', border: item.approved ? 'none' : `2px solid ${colors.border}`, backgroundColor: item.approved ? colors.success : 'white', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', flexShrink: 0 }}
-                  >{item.approved ? '✓' : ''}</button>
+                  >{item.approved ? '' : ''}</button>
                   <div>
-                    <span style={{ display: 'inline-block', padding: '2px 8px', backgroundColor: colors.divider, borderRadius: '4px', fontSize: '10px', color: colors.textMuted, marginBottom: '6px', textTransform: 'uppercase' }}>{item.type}</span>
-                    <p style={{ margin: 0, fontSize: '14px', color: item.approved ? colors.text : colors.textMuted, textDecoration: item.approved ? 'none' : 'line-through' }}>{item.text}</p>
+                    <span style={{ display: 'inline-block', padding: '2px 8px', backgroundColor: colors.borderLight, borderRadius: '4px', fontSize: '10px', color: colors.textSecondary, marginBottom: '6px', textTransform: 'uppercase' }}>{item.type}</span>
+                    <p style={{ margin: 0, fontSize: '14px', color: item.approved ? colors.text : colors.textSecondary, textDecoration: item.approved ? 'none' : 'line-through' }}>{item.text}</p>
                   </div>
                 </div>
               </Card>
@@ -1077,7 +1191,7 @@ export default function PeriHealthApp() {
               <Button style={{ flex: 1 }} onClick={() => { alert('Plan confirmed! This would save to your record and send to Dr. Chen.'); setScreen(SCREENS.DASHBOARD); }}>Confirm Plan</Button>
             </div>
 
-            <p style={{ margin: '16px 0 0', fontSize: '11px', color: colors.textMuted, textAlign: 'center' }}>You can modify this plan at any time. Your preferences are documented.</p>
+            <p style={{ margin: '16px 0 0', fontSize: '11px', color: colors.textSecondary, textAlign: 'center' }}>You can modify this plan at any time. Your preferences are documented.</p>
           </div>
         </div>
       )}
@@ -1122,7 +1236,7 @@ export default function PeriHealthApp() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                       <div>
                         <h4 style={{ margin: '0 0 2px', fontSize: '14px', color: colors.text, fontWeight: '600' }}>{lab.test}</h4>
-                        <p style={{ margin: 0, fontSize: '12px', color: colors.textMuted }}>{lab.date}</p>
+                        <p style={{ margin: 0, fontSize: '12px', color: colors.textSecondary }}>{lab.date}</p>
                       </div>
                       <StatusBadge status={lab.status} text={lab.status === 'good' ? 'In range' : 'Insight'} />
                     </div>
@@ -1130,7 +1244,7 @@ export default function PeriHealthApp() {
                     
                     <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                        <span style={{ fontSize: '11px', color: colors.textMuted, minWidth: '80px' }}>Population:</span>
+                        <span style={{ fontSize: '11px', color: colors.textSecondary, minWidth: '80px' }}>Population:</span>
                         <span style={{ fontSize: '12px', color: colors.text }}>{lab.populationRange}</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
@@ -1139,7 +1253,7 @@ export default function PeriHealthApp() {
                       </div>
                     </div>
 
-                    <div style={{ marginTop: '10px', padding: '10px', backgroundColor: `${colors.primary}08`, borderRadius: '8px', borderLeft: `3px solid ${lab.status === 'good' ? colors.success : colors.accent}` }}>
+                    <div style={{ marginTop: '10px', padding: '10px', backgroundColor: `${colors.primary}08`, borderRadius: '8px', borderLeft: `3px solid ${lab.status === 'good' ? colors.success : colors.primary}` }}>
                       <p style={{ margin: 0, fontSize: '12px', color: colors.text, lineHeight: '1.5' }}>
                         <strong>What this means for you:</strong> {lab.interpretation}
                       </p>
@@ -1158,7 +1272,7 @@ export default function PeriHealthApp() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                       <div>
                         <h4 style={{ margin: '0 0 2px', fontSize: '14px', color: colors.text, fontWeight: '600' }}>{visit.type}</h4>
-                        <p style={{ margin: 0, fontSize: '12px', color: colors.textMuted }}>{visit.provider} • {visit.date}</p>
+                        <p style={{ margin: 0, fontSize: '12px', color: colors.textSecondary }}>{visit.provider} • {visit.date}</p>
                       </div>
                     </div>
                     <p style={{ margin: 0, fontSize: '13px', color: colors.text, lineHeight: '1.5' }}>{visit.summary}</p>
@@ -1174,7 +1288,7 @@ export default function PeriHealthApp() {
                 {healthSystemDetails[selectedHealthSystem].complaints.map((complaint, i) => (
                   <Card key={i} style={{ marginBottom: '10px', padding: '12px 14px' }}>
                     <div style={{ display: 'flex', gap: '10px' }}>
-                      <span style={{ color: colors.textMuted, fontSize: '12px', minWidth: '80px' }}>{complaint.date}</span>
+                      <span style={{ color: colors.textSecondary, fontSize: '12px', minWidth: '80px' }}>{complaint.date}</span>
                       <p style={{ margin: 0, fontSize: '13px', color: colors.text }}>{complaint.issue}</p>
                     </div>
                   </Card>
@@ -1186,18 +1300,18 @@ export default function PeriHealthApp() {
             {healthSystemDetails[selectedHealthSystem].aiInsights && healthSystemDetails[selectedHealthSystem].aiInsights.length > 0 && (
               <>
                 <h3 style={{ margin: '20px 0 8px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>
-                  <span style={{ marginRight: '8px' }}>✨</span>
+                  <span style={{ marginRight: '8px' }}></span>
                   Patterns We've Noticed
                 </h3>
-                <p style={{ margin: '0 0 16px', fontSize: '13px', color: colors.textMuted }}>
+                <p style={{ margin: '0 0 16px', fontSize: '13px', color: colors.textSecondary }}>
                   AI-assisted analysis connecting your health data across visits and systems
                 </p>
 
                 {healthSystemDetails[selectedHealthSystem].aiInsights.map((insight, i) => (
                   <Card key={i} style={{ 
                     marginBottom: '16px', 
-                    border: `2px solid ${insight.type === 'protective' ? colors.success : colors.accent}`,
-                    background: `linear-gradient(135deg, ${insight.type === 'protective' ? colors.success : colors.accent}08 0%, ${insight.type === 'protective' ? colors.success : colors.accent}02 100%)`
+                    border: `2px solid ${insight.type === 'protective' ? colors.success : colors.primary}`,
+                    background: `linear-gradient(135deg, ${insight.type === 'protective' ? colors.success : colors.primary}08 0%, ${insight.type === 'protective' ? colors.success : colors.primary}02 100%)`
                   }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '10px' }}>
                       <span style={{ fontSize: '20px' }}>
@@ -1207,7 +1321,7 @@ export default function PeriHealthApp() {
                         <h4 style={{ margin: '0 0 2px', fontSize: '14px', color: colors.text, fontWeight: '600' }}>{insight.title}</h4>
                         <span style={{ 
                           fontSize: '10px', 
-                          color: insight.type === 'protective' ? colors.success : colors.accent,
+                          color: insight.type === 'protective' ? colors.success : colors.primary,
                           textTransform: 'uppercase',
                           letterSpacing: '0.5px',
                           fontWeight: '600'
@@ -1245,7 +1359,7 @@ export default function PeriHealthApp() {
 
             {/* Age-Related Insights */}
             <h3 style={{ margin: '20px 0 8px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Health Insights for You</h3>
-            <p style={{ margin: '0 0 16px', fontSize: '13px', color: colors.textMuted }}>
+            <p style={{ margin: '0 0 16px', fontSize: '13px', color: colors.textSecondary }}>
               Based on your age and health profile, here are some conditions to be aware of and how you can stay healthy.
             </p>
 
@@ -1259,10 +1373,10 @@ export default function PeriHealthApp() {
                     fontSize: '11px',
                     fontWeight: '600',
                     backgroundColor: insight.likelihood.includes('High') ? `${colors.warning}15` : 
-                                    insight.likelihood.includes('Moderate') ? `${colors.accent}15` : 
+                                    insight.likelihood.includes('Moderate') ? `${colors.primary}15` : 
                                     `${colors.primary}15`,
                     color: insight.likelihood.includes('High') ? colors.warning : 
-                           insight.likelihood.includes('Moderate') ? colors.accent : 
+                           insight.likelihood.includes('Moderate') ? colors.primary : 
                            colors.primary
                   }}>
                     {insight.likelihood} likelihood
@@ -1283,7 +1397,7 @@ export default function PeriHealthApp() {
 
                 <div style={{ marginBottom: '12px' }}>
                   <p style={{ margin: '0 0 6px', fontSize: '12px', color: colors.success, fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    ✓ How to reduce your risk
+                    How to reduce your risk
                   </p>
                   <p style={{ margin: 0, fontSize: '13px', color: colors.text, lineHeight: '1.6' }}>
                     {insight.prevention}
@@ -1307,7 +1421,7 @@ export default function PeriHealthApp() {
               <Button variant="accent" style={{ flex: 1 }}>📆 Schedule Visit</Button>
             </div>
 
-            <p style={{ margin: '16px 0 0', fontSize: '11px', color: colors.textMuted, textAlign: 'center' }}>
+            <p style={{ margin: '16px 0 0', fontSize: '11px', color: colors.textSecondary, textAlign: 'center' }}>
               Have questions about these insights? Your care team is here to help.
             </p>
           </div>
@@ -1336,7 +1450,7 @@ export default function PeriHealthApp() {
               <h3 style={{ margin: '0 0 16px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Basic Information</h3>
               <div style={{ display: 'flex', gap: '12px' }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px' }}>Age</label>
+                  <label style={{ display: 'block', fontSize: '12px', color: colors.textSecondary, marginBottom: '6px' }}>Age</label>
                   <input
                     type="number"
                     value={patientProfile.age}
@@ -1345,7 +1459,7 @@ export default function PeriHealthApp() {
                   />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px' }}>Sex</label>
+                  <label style={{ display: 'block', fontSize: '12px', color: colors.textSecondary, marginBottom: '6px' }}>Sex</label>
                   <select
                     value={patientProfile.sex}
                     onChange={(e) => setPatientProfile({...patientProfile, sex: e.target.value})}
@@ -1365,7 +1479,7 @@ export default function PeriHealthApp() {
               <h3 style={{ margin: '0 0 16px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Current Symptoms</h3>
               
               <div style={{ marginBottom: '12px' }}>
-                <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px' }}>Primary Complaint</label>
+                <label style={{ display: 'block', fontSize: '12px', color: colors.textSecondary, marginBottom: '6px' }}>Primary Complaint</label>
                 <input
                   type="text"
                   value={currentSymptom.description}
@@ -1376,7 +1490,7 @@ export default function PeriHealthApp() {
               </div>
 
               <div style={{ marginBottom: '12px' }}>
-                <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px' }}>When did you first notice this symptom?</label>
+                <label style={{ display: 'block', fontSize: '12px', color: colors.textSecondary, marginBottom: '6px' }}>When did you first notice this symptom?</label>
                 <input
                   type="text"
                   value={currentSymptom.duration}
@@ -1387,7 +1501,7 @@ export default function PeriHealthApp() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: colors.textMuted, marginBottom: '6px' }}>Intensity</label>
+                <label style={{ display: 'block', fontSize: '12px', color: colors.textSecondary, marginBottom: '6px' }}>Intensity</label>
                 <select
                   value={currentSymptom.severity}
                   onChange={(e) => setCurrentSymptom({...currentSymptom, severity: e.target.value})}
@@ -1402,7 +1516,7 @@ export default function PeriHealthApp() {
 
             {/* Past Medical History */}
             <Card style={{ marginBottom: '16px' }}>
-              <h3 style={{ margin: '0 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Past Medical History <span style={{ fontWeight: '400', color: colors.textMuted }}>(Optional)</span></h3>
+              <h3 style={{ margin: '0 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Past Medical History <span style={{ fontWeight: '400', color: colors.textSecondary }}>(Optional)</span></h3>
               <input
                 type="text"
                 value={patientProfile.pmh}
@@ -1414,7 +1528,7 @@ export default function PeriHealthApp() {
 
             {/* Medications */}
             <Card style={{ marginBottom: '16px' }}>
-              <h3 style={{ margin: '0 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Current Medications <span style={{ fontWeight: '400', color: colors.textMuted }}>(Optional)</span></h3>
+              <h3 style={{ margin: '0 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Current Medications <span style={{ fontWeight: '400', color: colors.textSecondary }}>(Optional)</span></h3>
               <input
                 type="text"
                 value={patientProfile.medications}
@@ -1426,7 +1540,7 @@ export default function PeriHealthApp() {
 
             {/* Family History */}
             <Card style={{ marginBottom: '20px' }}>
-              <h3 style={{ margin: '0 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Family History <span style={{ fontWeight: '400', color: colors.textMuted }}>(Optional)</span></h3>
+              <h3 style={{ margin: '0 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Family History <span style={{ fontWeight: '400', color: colors.textSecondary }}>(Optional)</span></h3>
               <input
                 type="text"
                 value={patientProfile.familyHistory}
@@ -1440,10 +1554,10 @@ export default function PeriHealthApp() {
               onClick={generateDifferentialDiagnosis}
               disabled={!currentSymptom.description || !currentSymptom.duration || isGenerating}
             >
-              {isGenerating ? '🔄 Analyzing...' : '✨ Get AI Health Insights'}
+              {isGenerating ? '<RotateCcw size={18} /> Analyzing...' : ' Get AI Health Insights'}
             </Button>
 
-            <p style={{ margin: '12px 0 0', fontSize: '11px', color: colors.textMuted, textAlign: 'center' }}>
+            <p style={{ margin: '12px 0 0', fontSize: '11px', color: colors.textSecondary, textAlign: 'center' }}>
               This analysis is based on clinical guidelines and medical literature. Always consult a healthcare provider for medical advice.
             </p>
           </div>
@@ -1477,15 +1591,15 @@ export default function PeriHealthApp() {
               <Card key={i} style={{ marginBottom: '16px', border: `2px solid ${i === 0 ? colors.primary : colors.border}` }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: i === 0 ? colors.primary : colors.divider, color: i === 0 ? 'white' : colors.textMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '600' }}>{i + 1}</span>
+                    <span style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: i === 0 ? colors.primary : colors.borderLight, color: i === 0 ? 'white' : colors.textSecondary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '600' }}>{i + 1}</span>
                     <h4 style={{ margin: 0, fontSize: '15px', color: colors.text, fontWeight: '600' }}>{dx.condition}</h4>
                   </div>
-                  <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '600', backgroundColor: dx.likelihood === 'high' ? `${colors.accent}15` : dx.likelihood === 'moderate' ? `${colors.warning}15` : `${colors.primary}15`, color: dx.likelihood === 'high' ? colors.accent : dx.likelihood === 'moderate' ? colors.warning : colors.primary }}>
+                  <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: '600', backgroundColor: dx.likelihood === 'high' ? `${colors.primary}15` : dx.likelihood === 'moderate' ? `${colors.warning}15` : `${colors.primary}15`, color: dx.likelihood === 'high' ? colors.primary : dx.likelihood === 'moderate' ? colors.warning : colors.primary }}>
                     {dx.likelihood.toUpperCase()}
                   </span>
                 </div>
                 
-                <ConfidenceBar confidence={dx.confidence} color={dx.likelihood === 'high' ? colors.accent : dx.likelihood === 'moderate' ? colors.warning : colors.primary} />
+                <ConfidenceBar confidence={dx.confidence} color={dx.likelihood === 'high' ? colors.primary : dx.likelihood === 'moderate' ? colors.warning : colors.primary} />
                 
                 <div style={{ marginTop: '12px', padding: '12px', backgroundColor: `${colors.primary}08`, borderRadius: '8px' }}>
                   <p style={{ margin: 0, fontSize: '13px', color: colors.text, lineHeight: '1.6' }}>
@@ -1494,10 +1608,10 @@ export default function PeriHealthApp() {
                 </div>
 
                 <div style={{ marginTop: '12px' }}>
-                  <p style={{ margin: '0 0 6px', fontSize: '12px', color: colors.textMuted, fontWeight: '600' }}>Supporting Criteria:</p>
+                  <p style={{ margin: '0 0 6px', fontSize: '12px', color: colors.textSecondary, fontWeight: '600' }}>Supporting Criteria:</p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                     {dx.supportingCriteria.map((criterion, j) => (
-                      <span key={j} style={{ padding: '4px 10px', backgroundColor: colors.divider, borderRadius: '12px', fontSize: '11px', color: colors.text }}>{criterion}</span>
+                      <span key={j} style={{ padding: '4px 10px', backgroundColor: colors.borderLight, borderRadius: '12px', fontSize: '11px', color: colors.text }}>{criterion}</span>
                     ))}
                   </div>
                 </div>
@@ -1525,7 +1639,7 @@ export default function PeriHealthApp() {
             {generatedDiagnosis.ruleOutConditions && generatedDiagnosis.ruleOutConditions.length > 0 && (
               <>
                 <h3 style={{ margin: '20px 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Conditions to Rule Out</h3>
-                <p style={{ margin: '0 0 12px', fontSize: '13px', color: colors.textMuted }}>These conditions should be evaluated to ensure they're not causing your symptoms</p>
+                <p style={{ margin: '0 0 12px', fontSize: '13px', color: colors.textSecondary }}>These conditions should be evaluated to ensure they're not causing your symptoms</p>
                 
                 {generatedDiagnosis.ruleOutConditions.map((condition, i) => (
                   <Card key={i} style={{ marginBottom: '12px', border: `2px solid ${condition.urgency === 'immediate' ? colors.alert : colors.warning}` }}>
@@ -1550,10 +1664,10 @@ export default function PeriHealthApp() {
                 </h3>
                 
                 {generatedDiagnosis.crossSystemPatterns.map((pattern, i) => (
-                  <Card key={i} style={{ marginBottom: '12px', border: `2px solid ${colors.accent}`, background: `${colors.accent}05` }}>
+                  <Card key={i} style={{ marginBottom: '12px', border: `2px solid ${colors.primary}`, background: `${colors.primary}05` }}>
                     <p style={{ margin: '0 0 8px', fontSize: '14px', color: colors.text, fontWeight: '600' }}>{pattern.pattern}</p>
                     <p style={{ margin: '0 0 10px', fontSize: '13px', color: colors.text, lineHeight: '1.5' }}>{pattern.implications}</p>
-                    <div style={{ padding: '10px', backgroundColor: 'white', borderRadius: '8px', borderLeft: `3px solid ${colors.accent}` }}>
+                    <div style={{ padding: '10px', backgroundColor: 'white', borderRadius: '8px', borderLeft: `3px solid ${colors.primary}` }}>
                       <p style={{ margin: 0, fontSize: '12px', color: colors.text }}><strong>Recommendation:</strong> {pattern.action}</p>
                     </div>
                   </Card>
@@ -1565,13 +1679,13 @@ export default function PeriHealthApp() {
             {generatedDiagnosis.ageRelatedScreening && generatedDiagnosis.ageRelatedScreening.length > 0 && (
               <>
                 <h3 style={{ margin: '20px 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Recommended Screenings</h3>
-                <p style={{ margin: '0 0 12px', fontSize: '13px', color: colors.textMuted }}>Based on your age and sex</p>
+                <p style={{ margin: '0 0 12px', fontSize: '13px', color: colors.textSecondary }}>Based on your age and sex</p>
                 
                 {generatedDiagnosis.ageRelatedScreening.map((screening, i) => (
                   <Card key={i} style={{ marginBottom: '12px' }}>
                     <h4 style={{ margin: '0 0 6px', fontSize: '14px', color: colors.text, fontWeight: '600' }}>{screening.screening}</h4>
                     <p style={{ margin: '0 0 8px', fontSize: '13px', color: colors.text }}>{screening.reason}</p>
-                    <p style={{ margin: 0, fontSize: '12px', color: colors.textMuted }}><strong>Frequency:</strong> {screening.frequency}</p>
+                    <p style={{ margin: 0, fontSize: '12px', color: colors.textSecondary }}><strong>Frequency:</strong> {screening.frequency}</p>
                   </Card>
                 ))}
               </>
@@ -1596,7 +1710,7 @@ export default function PeriHealthApp() {
               </Button>
             </div>
 
-            <p style={{ margin: '16px 0 0', fontSize: '11px', color: colors.textMuted, textAlign: 'center' }}>
+            <p style={{ margin: '16px 0 0', fontSize: '11px', color: colors.textSecondary, textAlign: 'center' }}>
               Analysis generated by AI based on current medical literature and clinical guidelines. Always consult a licensed healthcare provider for diagnosis and treatment.
             </p>
           </div>
@@ -1626,7 +1740,7 @@ export default function PeriHealthApp() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                 <div>
                   <p style={{ margin: '0 0 4px', fontSize: '16px', fontWeight: '600', color: colors.text }}>Monday, December 9</p>
-                  <p style={{ margin: 0, fontSize: '14px', color: colors.textMuted }}>2:30 PM - 3:00 PM</p>
+                  <p style={{ margin: 0, fontSize: '14px', color: colors.textSecondary }}>2:30 PM - 3:00 PM</p>
                 </div>
                 {bookedAppointment?.id === 'dec9' ? (
                   <StatusBadge status="good" text="Booked" />
@@ -1634,10 +1748,10 @@ export default function PeriHealthApp() {
                   <StatusBadge status="insight" text="Soonest" />
                 )}
               </div>
-              <p style={{ margin: '12px 0', fontSize: '13px', color: colors.text }}>📍 In-Person Visit</p>
-              <p style={{ margin: '0 0 12px', fontSize: '12px', color: colors.textMuted }}>450 Serra Mall, Stanford, CA 94305</p>
+              <p style={{ margin: '12px 0', fontSize: '13px', color: colors.text }}>In-Person Visit</p>
+              <p style={{ margin: '0 0 12px', fontSize: '12px', color: colors.textSecondary }}>450 Serra Mall, Stanford, CA 94305</p>
               {bookedAppointment?.id === 'dec9' ? (
-                <p style={{ margin: 0, fontSize: '13px', color: colors.success, fontWeight: '600' }}>✓ This is your scheduled appointment</p>
+                <p style={{ margin: 0, fontSize: '13px', color: colors.success, fontWeight: '600' }}>This is your scheduled appointment</p>
               ) : (
                 <Button 
                   variant="accent" 
@@ -1670,16 +1784,16 @@ export default function PeriHealthApp() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                 <div>
                   <p style={{ margin: '0 0 4px', fontSize: '16px', fontWeight: '600', color: colors.text }}>Tuesday, December 10</p>
-                  <p style={{ margin: 0, fontSize: '14px', color: colors.textMuted }}>9:00 AM - 9:30 AM</p>
+                  <p style={{ margin: 0, fontSize: '14px', color: colors.textSecondary }}>9:00 AM - 9:30 AM</p>
                 </div>
                 {bookedAppointment?.id === 'dec10' && (
                   <StatusBadge status="good" text="Booked" />
                 )}
               </div>
-              <p style={{ margin: '12px 0', fontSize: '13px', color: colors.text }}>💻 Telehealth Visit</p>
-              <p style={{ margin: '0 0 12px', fontSize: '12px', color: colors.textMuted }}>Video call via secure patient portal</p>
+              <p style={{ margin: '12px 0', fontSize: '13px', color: colors.text }}>Telehealth Visit</p>
+              <p style={{ margin: '0 0 12px', fontSize: '12px', color: colors.textSecondary }}>Video call via secure patient portal</p>
               {bookedAppointment?.id === 'dec10' ? (
-                <p style={{ margin: 0, fontSize: '13px', color: colors.success, fontWeight: '600' }}>✓ This is your scheduled appointment</p>
+                <p style={{ margin: 0, fontSize: '13px', color: colors.success, fontWeight: '600' }}>This is your scheduled appointment</p>
               ) : (
                 <Button 
                   variant="outline" 
@@ -1712,16 +1826,16 @@ export default function PeriHealthApp() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                 <div>
                   <p style={{ margin: '0 0 4px', fontSize: '16px', fontWeight: '600', color: colors.text }}>Wednesday, December 11</p>
-                  <p style={{ margin: 0, fontSize: '14px', color: colors.textMuted }}>4:00 PM - 4:30 PM</p>
+                  <p style={{ margin: 0, fontSize: '14px', color: colors.textSecondary }}>4:00 PM - 4:30 PM</p>
                 </div>
                 {bookedAppointment?.id === 'dec11' && (
                   <StatusBadge status="good" text="Booked" />
                 )}
               </div>
-              <p style={{ margin: '12px 0', fontSize: '13px', color: colors.text }}>📍 In-Person Visit</p>
-              <p style={{ margin: '0 0 12px', fontSize: '12px', color: colors.textMuted }}>450 Serra Mall, Stanford, CA 94305</p>
+              <p style={{ margin: '12px 0', fontSize: '13px', color: colors.text }}>In-Person Visit</p>
+              <p style={{ margin: '0 0 12px', fontSize: '12px', color: colors.textSecondary }}>450 Serra Mall, Stanford, CA 94305</p>
               {bookedAppointment?.id === 'dec11' ? (
-                <p style={{ margin: 0, fontSize: '13px', color: colors.success, fontWeight: '600' }}>✓ This is your scheduled appointment</p>
+                <p style={{ margin: 0, fontSize: '13px', color: colors.success, fontWeight: '600' }}>This is your scheduled appointment</p>
               ) : (
                 <Button 
                   variant="outline" 
@@ -1789,7 +1903,7 @@ export default function PeriHealthApp() {
           <div style={{ padding: '20px' }}>
             <Card style={{ marginBottom: '16px', backgroundColor: `${colors.success}08`, border: `1px solid ${colors.success}` }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                <span style={{ fontSize: '16px' }}>🔒</span>
+                <span style={{ fontSize: '16px' }}><Lock size={16} /></span>
                 <p style={{ margin: 0, fontSize: '12px', color: colors.text, lineHeight: '1.5' }}>
                   <strong>End-to-end encrypted</strong> - Your messages are private and secure. Only you and your care team can read them.
                 </p>
@@ -1806,7 +1920,7 @@ export default function PeriHealthApp() {
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
                     <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: colors.text }}>Dr. Sarah Chen</p>
-                    <p style={{ margin: 0, fontSize: '11px', color: colors.textMuted }}>2 hours ago</p>
+                    <p style={{ margin: 0, fontSize: '11px', color: colors.textSecondary }}>2 hours ago</p>
                   </div>
                   <p style={{ margin: 0, fontSize: '13px', color: colors.text }}>Lab results look good. Let's discuss at your next...</p>
                   <StatusBadge status="attention" text="1 New" style={{ marginTop: '6px' }} />
@@ -1816,30 +1930,30 @@ export default function PeriHealthApp() {
 
             <Card style={{ marginBottom: '12px', cursor: 'pointer' }} onClick={() => alert('Message thread would open here')}>
               <div style={{ display: 'flex', gap: '12px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: colors.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '600', fontSize: '16px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: colors.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '600', fontSize: '16px' }}>
                   AR
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
                     <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: colors.text }}>Alex Rivera, PT</p>
-                    <p style={{ margin: 0, fontSize: '11px', color: colors.textMuted }}>Yesterday</p>
+                    <p style={{ margin: 0, fontSize: '11px', color: colors.textSecondary }}>Yesterday</p>
                   </div>
-                  <p style={{ margin: 0, fontSize: '13px', color: colors.textMuted }}>Here are your home exercise instructions...</p>
+                  <p style={{ margin: 0, fontSize: '13px', color: colors.textSecondary }}>Here are your home exercise instructions...</p>
                 </div>
               </div>
             </Card>
 
             <Card style={{ marginBottom: '16px', cursor: 'pointer' }} onClick={() => alert('Message thread would open here')}>
               <div style={{ display: 'flex', gap: '12px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: colors.divider, display: 'flex', alignItems: 'center', justifyContent: 'center', color: colors.textMuted, fontWeight: '600', fontSize: '16px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: colors.borderLight, display: 'flex', alignItems: 'center', justifyContent: 'center', color: colors.textSecondary, fontWeight: '600', fontSize: '16px' }}>
                   CS
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
                     <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: colors.text }}>Care Scheduler</p>
-                    <p style={{ margin: 0, fontSize: '11px', color: colors.textMuted }}>Dec 1</p>
+                    <p style={{ margin: 0, fontSize: '11px', color: colors.textSecondary }}>Dec 1</p>
                   </div>
-                  <p style={{ margin: 0, fontSize: '13px', color: colors.textMuted }}>Appointment confirmed for Dec 3 at 10:30 AM</p>
+                  <p style={{ margin: 0, fontSize: '13px', color: colors.textSecondary }}>Appointment confirmed for Dec 3 at 10:30 AM</p>
                 </div>
               </div>
             </Card>
@@ -1877,7 +1991,7 @@ export default function PeriHealthApp() {
             <h3 style={{ margin: '0 0 12px', fontSize: '18px', color: colors.text, fontWeight: '600' }}>
               Cancel Appointment?
             </h3>
-            <p style={{ margin: '0 0 20px', fontSize: '14px', color: colors.textMuted, lineHeight: '1.5' }}>
+            <p style={{ margin: '0 0 20px', fontSize: '14px', color: colors.textSecondary, lineHeight: '1.5' }}>
               Are you sure you want to cancel your appointment with Dr. Chen on {bookedAppointment ? bookedAppointment.date : upcomingAppointment.date} at {bookedAppointment ? bookedAppointment.time : upcomingAppointment.time}?
             </p>
             <div style={{ display: 'flex', gap: '12px' }}>
@@ -1930,8 +2044,8 @@ export default function PeriHealthApp() {
               Confirm Appointment
             </h3>
             
-            <Card style={{ marginBottom: '20px', backgroundColor: `${colors.accent}08` }}>
-              <p style={{ margin: '0 0 8px', fontSize: '13px', color: colors.textMuted, fontWeight: '500' }}>
+            <Card style={{ marginBottom: '20px', backgroundColor: `${colors.primary}08` }}>
+              <p style={{ margin: '0 0 8px', fontSize: '13px', color: colors.textSecondary, fontWeight: '500' }}>
                 {pendingBooking.type}
               </p>
               <p style={{ margin: '0 0 4px', fontSize: '16px', color: colors.text, fontWeight: '600' }}>
@@ -1940,11 +2054,11 @@ export default function PeriHealthApp() {
               <p style={{ margin: '0 0 4px', fontSize: '14px', color: colors.text }}>
                 {pendingBooking.time}
               </p>
-              <p style={{ margin: '0 0 8px', fontSize: '13px', color: colors.textMuted }}>
+              <p style={{ margin: '0 0 8px', fontSize: '13px', color: colors.textSecondary }}>
                 {pendingBooking.provider}
               </p>
               <p style={{ margin: 0, fontSize: '13px', color: colors.text }}>
-                📍 {pendingBooking.location}
+                {pendingBooking.location}
               </p>
             </Card>
 
@@ -2002,10 +2116,10 @@ export default function PeriHealthApp() {
             gap: '4px',
             padding: '8px 16px',
             cursor: 'pointer',
-            color: screen === SCREENS.DASHBOARD ? colors.primary : colors.textMuted
+            color: screen === SCREENS.DASHBOARD ? colors.primary : colors.textSecondary
           }}
         >
-          <span style={{ fontSize: '20px' }}>🏠</span>
+          <Home size={22} strokeWidth={screen === SCREENS.DASHBOARD ? 2.5 : 2} />
           <span style={{ fontSize: '11px', fontWeight: screen === SCREENS.DASHBOARD ? '600' : '400' }}>Home</span>
         </button>
 
@@ -2020,10 +2134,10 @@ export default function PeriHealthApp() {
             gap: '4px',
             padding: '8px 16px',
             cursor: 'pointer',
-            color: screen === SCREENS.SCHEDULE_VISIT ? colors.primary : colors.textMuted
+            color: screen === SCREENS.SCHEDULE_VISIT ? colors.primary : colors.textSecondary
           }}
         >
-          <span style={{ fontSize: '20px' }}>📅</span>
+          <Calendar size={22} strokeWidth={screen === SCREENS.SCHEDULE_VISIT ? 2.5 : 2} />
           <span style={{ fontSize: '11px', fontWeight: screen === SCREENS.SCHEDULE_VISIT ? '600' : '400' }}>Schedule</span>
         </button>
 
@@ -2038,10 +2152,10 @@ export default function PeriHealthApp() {
             gap: '4px',
             padding: '8px 16px',
             cursor: 'pointer',
-            color: screen === SCREENS.SYMPTOM_INTAKE ? colors.primary : colors.textMuted
+            color: screen === SCREENS.SYMPTOM_INTAKE ? colors.primary : colors.textSecondary
           }}
         >
-          <span style={{ fontSize: '20px' }}>🩺</span>
+          <FileText size={22} strokeWidth={screen === SCREENS.SYMPTOM_INTAKE ? 2.5 : 2} />
           <span style={{ fontSize: '11px', fontWeight: screen === SCREENS.SYMPTOM_INTAKE ? '600' : '400' }}>Symptoms</span>
         </button>
 
@@ -2056,11 +2170,11 @@ export default function PeriHealthApp() {
             gap: '4px',
             padding: '8px 16px',
             cursor: 'pointer',
-            color: screen === SCREENS.MESSAGES ? colors.primary : colors.textMuted,
+            color: screen === SCREENS.MESSAGES ? colors.primary : colors.textSecondary,
             position: 'relative'
           }}
         >
-          <span style={{ fontSize: '20px' }}>💬</span>
+          <MessageSquare size={22} strokeWidth={screen === SCREENS.MESSAGES ? 2.5 : 2} />
           <span style={{ fontSize: '11px', fontWeight: screen === SCREENS.MESSAGES ? '600' : '400' }}>Messages</span>
           <span style={{
             position: 'absolute',
