@@ -12,15 +12,14 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid patient data - symptoms required' });
     }
 
-    // Build the clinical prompt
-    const prompt = `You are a clinical decision support system. Based on the following patient presentation, generate a differential diagnosis following current clinical practice guidelines.
+    const prompt = `You are a clinical decision support system. Based on the following patient presentation, generate a differential diagnosis following current clinical diagnositc practice guidelines and validated medical research.
 
 Patient Demographics:
 - Age: ${patientProfile.age}
 - Sex: ${patientProfile.sex}
 
 Current Symptoms:
-${patientProfile.symptoms.map(s => `- ${s.description} (Duration: ${s.duration}, Severity: ${s.severity})`).join('\n')}
+${patientProfile.symptoms.map(s => `- ${s.description} (Started: ${s.started}, Severity of impact (0-1): ${s.severity})`).join('\n')}
 
 ${patientProfile.pmh ? `Past Medical History:\n${patientProfile.pmh}` : ''}
 
@@ -29,12 +28,12 @@ ${patientProfile.medications ? `Current Medications:\n${patientProfile.medicatio
 ${patientProfile.familyHistory ? `Family History:\n${patientProfile.familyHistory}` : ''}
 
 Provide a comprehensive clinical analysis:
-1. Top 5-7 differential diagnoses ranked by likelihood based on the symptom constellation
-2. For each diagnosis, explain the supporting criteria and why it fits this presentation
-3. Recommended diagnostic tests (labs, imaging, other) to confirm or rule out each condition
-4. Identify any conditions that MUST be ruled out due to severity/urgency
-5. Age-appropriate and sex-appropriate screening considerations
-6. Cross-system patterns that may explain multiple symptoms
+1. Top 5-7 differential diagnoses ranked by likelihood, based on signs, symptoms and patient demographic against clinical decision-making and assessment guidelines
+2. For each diagnosis, explain the supporting criteria
+3. Recommended diagnostic tests and assessments to become familiar with and discuss with MD, on the medical basis that the could rule a condition in or out
+4. Identify symptoms that MUST be further evaluated for more accurate diagnosis 
+5. Age-appropriate, sex-appropriate screening, and PMH appropirate screening
+6. Cross-system and visit patterns that may explain multiple symptoms
 
 CRITICAL: Your entire response MUST be ONLY valid JSON in this exact structure with no additional text, explanations, or markdown formatting:
 
