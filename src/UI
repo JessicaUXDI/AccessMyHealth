@@ -1,0 +1,354 @@
+// components/UI.jsx - Reusable UI Components
+import React from 'react';
+import { colors, typography, borderRadius, touchTargets, transitions } from '../theme';
+
+// Icon dot - binary status indicator
+export const Icon = ({ needsAttention, size = 12 }) => (
+  <div style={{
+    width: `${size}px`,
+    height: `${size}px`,
+    borderRadius: '50%',
+    backgroundColor: needsAttention ? colors.primary : colors.secondary,
+  }} />
+);
+
+// Action badge - only shown when action needed
+export const ActionBadge = ({ text }) => (
+  <span style={{
+    display: 'inline-flex',
+    alignItems: 'center',
+    padding: '6px 12px',
+    borderRadius: borderRadius.sm,
+    fontSize: '12px',
+    fontWeight: 600,
+    backgroundColor: colors.primary,
+    color: 'white',
+  }}>
+    {text}
+  </span>
+);
+
+// Card component
+export const Card = ({ children, style = {}, onClick }) => {
+  const [isHovered, setIsHovered] = React.useState(false);
+  
+  return (
+    <div 
+      onClick={onClick} 
+      onMouseEnter={() => onClick && setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{ 
+        backgroundColor: colors.card, 
+        borderRadius: borderRadius.lg, 
+        border: `1px solid ${isHovered && onClick ? colors.primary : colors.border}`, 
+        padding: '20px', 
+        cursor: onClick ? 'pointer' : 'default',
+        transition: `border-color ${transitions.normal}`,
+        ...style 
+      }}
+    >
+      {children}
+    </div>
+  );
+};
+
+// Button component
+export const Button = ({ 
+  children, 
+  variant = 'primary', 
+  onClick, 
+  style = {}, 
+  disabled,
+  size = 'default' 
+}) => {
+  const variants = {
+    primary: { 
+      bg: colors.primary, 
+      color: 'white',
+      border: 'none',
+    },
+    outline: { 
+      bg: 'transparent', 
+      color: colors.text.primary,
+      border: `2px solid ${colors.primary}`,
+    },
+    ghost: { 
+      bg: colors.background, 
+      color: colors.text.primary,
+      border: `1px solid ${colors.border}`,
+    }
+  };
+  
+  const sizes = {
+    default: {
+      padding: '14px 24px',
+      minHeight: touchTargets.primary,
+      fontSize: '15px',
+    },
+    small: {
+      padding: '10px 16px',
+      minHeight: touchTargets.secondary,
+      fontSize: '14px',
+    }
+  };
+  
+  const v = variants[variant];
+  const s = sizes[size];
+  
+  return (
+    <button 
+      onClick={onClick} 
+      disabled={disabled}
+      style={{ 
+        width: '100%', 
+        backgroundColor: disabled ? colors.background : v.bg, 
+        color: disabled ? colors.text.tertiary : v.color, 
+        border: disabled ? `1px solid ${colors.border}` : v.border, 
+        borderRadius: borderRadius.md, 
+        fontWeight: 600, 
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+        transition: `all ${transitions.normal}`,
+        fontFamily: typography.fontFamily,
+        ...s,
+        ...style 
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+// Header component
+export const Header = ({ title, subtitle, showBack, onBack }) => (
+  <div style={{ 
+    backgroundColor: colors.primary,
+    padding: showBack ? '20px 24px 24px' : '28px 24px 32px', 
+    color: 'white',
+  }}>
+    {showBack && (
+      <button 
+        onClick={onBack} 
+        style={{ 
+          background: 'rgba(255,255,255,0.2)', 
+          border: 'none', 
+          color: 'white', 
+          fontSize: '14px',
+          fontWeight: 600,
+          cursor: 'pointer', 
+          padding: '8px 16px', 
+          marginBottom: '16px',
+          display: 'inline-flex', 
+          alignItems: 'center', 
+          gap: '6px',
+          borderRadius: borderRadius.md,
+          fontFamily: typography.fontFamily,
+        }}
+      >
+        ← Back
+      </button>
+    )}
+    <h1 style={{ 
+      margin: 0, 
+      ...typography.h1, 
+      fontSize: showBack ? '22px' : '26px', 
+      color: 'white' 
+    }}>
+      {title}
+    </h1>
+    {subtitle && (
+      <p style={{ margin: '6px 0 0', fontSize: '14px', opacity: 0.9, color: 'white' }}>
+        {subtitle}
+      </p>
+    )}
+  </div>
+);
+
+// Input component
+export const Input = ({ 
+  type = 'text', 
+  value, 
+  onChange, 
+  placeholder, 
+  style = {},
+  ...props 
+}) => (
+  <input
+    type={type}
+    value={value}
+    onChange={onChange}
+    placeholder={placeholder}
+    style={{
+      width: '100%',
+      padding: '10px 12px',
+      border: `1px solid ${colors.border}`,
+      borderRadius: borderRadius.md,
+      fontSize: '14px',
+      fontFamily: typography.fontFamily,
+      backgroundColor: colors.card,
+      color: colors.text.primary,
+      transition: `border-color ${transitions.normal}`,
+      ...style,
+    }}
+    onFocus={(e) => e.target.style.borderColor = colors.primary}
+    onBlur={(e) => e.target.style.borderColor = colors.border}
+    {...props}
+  />
+);
+
+// TextArea component
+export const TextArea = ({ 
+  value, 
+  onChange, 
+  placeholder, 
+  rows = 4,
+  style = {},
+  ...props 
+}) => (
+  <textarea
+    value={value}
+    onChange={onChange}
+    placeholder={placeholder}
+    rows={rows}
+    style={{
+      width: '100%',
+      padding: '10px 12px',
+      border: `1px solid ${colors.border}`,
+      borderRadius: borderRadius.md,
+      fontSize: '14px',
+      fontFamily: typography.fontFamily,
+      backgroundColor: colors.card,
+      color: colors.text.primary,
+      resize: 'vertical',
+      transition: `border-color ${transitions.normal}`,
+      ...style,
+    }}
+    onFocus={(e) => e.target.style.borderColor = colors.primary}
+    onBlur={(e) => e.target.style.borderColor = colors.border}
+    {...props}
+  />
+);
+
+// Select component
+export const Select = ({ 
+  value, 
+  onChange, 
+  options = [],
+  style = {},
+  ...props 
+}) => (
+  <select
+    value={value}
+    onChange={onChange}
+    style={{
+      width: '100%',
+      padding: '10px 12px',
+      border: `1px solid ${colors.border}`,
+      borderRadius: borderRadius.md,
+      fontSize: '14px',
+      fontFamily: typography.fontFamily,
+      backgroundColor: colors.card,
+      color: colors.text.primary,
+      cursor: 'pointer',
+      transition: `border-color ${transitions.normal}`,
+      ...style,
+    }}
+    onFocus={(e) => e.target.style.borderColor = colors.primary}
+    onBlur={(e) => e.target.style.borderColor = colors.border}
+    {...props}
+  >
+    {options.map((option) => (
+      <option key={option.value} value={option.value}>
+        {option.label}
+      </option>
+    ))}
+  </select>
+);
+
+// Modal component
+export const Modal = ({ isOpen, onClose, title, children }) => {
+  if (!isOpen) return null;
+  
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '20px'
+    }}>
+      <div style={{
+        backgroundColor: colors.card,
+        borderRadius: borderRadius.lg,
+        padding: '24px',
+        maxWidth: '380px',
+        width: '100%',
+      }}>
+        {title && (
+          <h3 style={{ margin: '0 0 12px', ...typography.h2 }}>
+            {title}
+          </h3>
+        )}
+        {children}
+      </div>
+    </div>
+  );
+};
+
+// Label component for forms
+export const Label = ({ children, htmlFor, style = {} }) => (
+  <label 
+    htmlFor={htmlFor}
+    style={{
+      display: 'block',
+      ...typography.caption,
+      marginBottom: '6px',
+      ...style,
+    }}
+  >
+    {children}
+  </label>
+);
+
+// InfoBlock - for displaying important information/interpretations
+export const InfoBlock = ({ children, variant = 'default', style = {} }) => {
+  const variants = {
+    default: {
+      backgroundColor: colors.background,
+      borderColor: colors.primary,
+    },
+    warning: {
+      backgroundColor: '#FEF3C7',
+      borderColor: colors.warning,
+    },
+    success: {
+      backgroundColor: '#D1FAE5',
+      borderColor: colors.secondary,
+    }
+  };
+  
+  const v = variants[variant];
+  
+  return (
+    <div style={{
+      padding: '14px',
+      backgroundColor: v.backgroundColor,
+      borderRadius: borderRadius.md,
+      borderLeft: `3px solid ${v.borderColor}`,
+      ...style,
+    }}>
+      <p style={{ margin: 0, ...typography.bodySmall, lineHeight: 1.6 }}>
+        {children}
+      </p>
+    </div>
+  );
+};
