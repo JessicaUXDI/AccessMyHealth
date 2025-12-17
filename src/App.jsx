@@ -691,7 +691,6 @@ const Button = ({ children, variant = 'primary', onClick, style = {}, disabled }
     </button>
   );
 };
-};
 
 export default function PeriHealthApp() {
   const [screen, setScreen] = useState(SCREENS.DASHBOARD);
