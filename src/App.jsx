@@ -38,11 +38,11 @@ const colors = {
 };
 
 const healthSystems = {
-  hormones: { icon: 'TrendingUp', name: 'Hormones & Gut Health', needsReview: true, reviewReason: 'New pattern detected', color: colors.primary },
-  wellbeing: { icon: 'Brain', name: 'Wellbeing', needsReview: false, color: colors.primary },
-  cardiovascular: { icon: 'Heart', name: 'Cardiovascular Health', needsReview: false, color: colors.primary },
-  orthopedic: { icon: 'Bone', name: 'Orthopedic Health', needsReview: true, reviewReason: 'Check-in needed', color: colors.primary },
-  participation: { icon: 'Zap', name: 'Participation Goals', needsReview: false, color: colors.primary },
+  hormones: { icon: 'TrendingUp', name: 'Hormones & Gut Health', needsReview: true, reviewReason: 'New pattern detected', completion: 75, color: colors.primary },
+  wellbeing: { icon: 'Brain', name: 'Wellbeing', needsReview: false, completion: 85, color: colors.primary },
+  cardiovascular: { icon: 'Heart', name: 'Cardiovascular Health', needsReview: false, completion: 90, color: colors.primary },
+  orthopedic: { icon: 'Bone', name: 'Orthopedic Health', needsReview: true, reviewReason: 'Check-in needed', completion: 60, color: colors.primary },
+  participation: { icon: 'Zap', name: 'Participation Goals', needsReview: false, completion: 72, color: colors.primary },
 };
 
 // Icon Renderer Helper
@@ -881,34 +881,8 @@ export default function PeriHealthApp() {
             </Card>
 
             <h3 style={{ margin: '0 0 12px', fontSize: '15px', color: colors.text, fontWeight: '600' }}>Your Health Systems</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
               {Object.entries(healthSystems).map(([key, system]) => (
-                    <Card key={key} onClick={() => setSelectedHealthSystem(key)}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                        <div style={{ 
-                          width: '12px', 
-                          height: '12px', 
-                          borderRadius: '50%', 
-                          backgroundColor: system.needsReview ? colors.primary : colors.secondary 
-                        }} />
-                        {renderIcon(system.icon, 24, colors.primary)}
-                      </div>
-                      <h3 style={{ margin: '0', fontSize: '15px', fontWeight: '600', color: colors.text }}>{system.name}</h3>
-                      {system.needsReview && (
-                        <div style={{
-                          background: colors.primary,
-                          color: '#FFFFFF',
-                          padding: '4px 8px',
-                          borderRadius: '6px',
-                          fontSize: '11px',
-                          fontWeight: '600',
-                          marginTop: '8px'
-                        }}>
-                          {system.reviewReason}
-                        </div>
-                      )}
-                    </Card>
-                  ))} => (
                 <Card 
                   key={key} 
                   style={{ padding: '14px', cursor: 'pointer' }}
