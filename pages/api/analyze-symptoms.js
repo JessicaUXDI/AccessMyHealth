@@ -1,3 +1,8 @@
+// api/analyze-symptoms.js
+// Backend API endpoint for symptom analysis
+// This can be deployed as a serverless function (Vercel, Netlify, AWS Lambda)
+// or as an Express.js route
+
 export default async function handler(req, res) {
   // Only allow POST requests
   if (req.method !== 'POST') {
@@ -5,127 +10,134 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { patientProfile } = req.body;
+    const { narrative } = req.body;
 
     // Validate input
-    if (!patientProfile || !patientProfile.symptoms || patientProfile.symptoms.length === 0) {
-      return res.status(400).json({ error: 'Invalid patient data - symptoms required' });
+    if (!narrative || typeof narrative !== 'string' || narrative.length < 20) {
+      return res.status(400).json({ 
+        error: 'Invalid input. Please provide a narrative with at least 20 characters.' 
+      });
     }
 
-    const prompt = `You are a clinical decision support system. Based on the following patient presentation, generate a differential diagnosis following current clinical diagnositc practice guidelines and validated medical research.
+    // Call Claude API
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        messages: [{
+          role: 'user',
+          content: `You are a medical AI assistant helping to generate a differential diagnosis based on a patient's narrative. Analyze the following patient narrative and provide:
 
-Patient Demographics:
-- Age: ${patientProfile.age}
-- Sex: ${patientProfile.sex}
+1. A differential diagnosis with 3-5 possible conditions
+2. Confidence levels (0-100) for each
+3. Supporting criteria from the narrative
+4. Recommended tests to confirm or rule out each condition
+5. Any red flags that need immediate attention
 
-Current Symptoms:
-${patientProfile.symptoms.map(s => `- ${s.description} (Started: ${s.started}, Severity of impact (0-1): ${s.severity})`).join('\n')}
+Patient Narrative:
+${narrative}
 
-${patientProfile.pmh ? `Past Medical History:\n${patientProfile.pmh}` : ''}
-
-${patientProfile.medications ? `Current Medications:\n${patientProfile.medications}` : ''}
-
-${patientProfile.familyHistory ? `Family History:\n${patientProfile.familyHistory}` : ''}
-
-Provide a comprehensive clinical analysis:
-1. Top 5-7 differential diagnoses ranked by likelihood, based on signs, symptoms and patient demographic against clinical decision-making and assessment guidelines
-2. For each diagnosis, explain the supporting criteria
-3. Recommended diagnostic tests and assessments to become familiar with and discuss with MD, on the medical basis that the could rule a condition in or out
-4. Identify symptoms that MUST be further evaluated for more accurate diagnosis 
-5. Age-appropriate, sex-appropriate screening, and PMH appropirate screening
-6. Cross-system and visit patterns that may explain multiple symptoms
-
-CRITICAL: Your entire response MUST be ONLY valid JSON in this exact structure with no additional text, explanations, or markdown formatting:
-
+Please respond ONLY with valid JSON in this exact format:
 {
   "differentialDiagnosis": [
     {
-      "condition": "condition name",
-      "likelihood": "high|moderate|low",
+      "condition": "Condition Name",
       "confidence": 85,
-      "supportingCriteria": ["criterion 1", "criterion 2"],
-      "explanation": "brief explanation of why this diagnosis fits",
-      "recommendedTests": ["test 1", "test 2"],
-      "clinicalGuideline": "reference to relevant clinical guideline"
+      "likelihood": "high",
+      "explanation": "Brief explanation of why this fits",
+      "supportingCriteria": ["Criterion 1", "Criterion 2"],
+      "recommendedTests": ["Test 1", "Test 2"],
+      "clinicalGuideline": "Brief reference to clinical guidelines if applicable"
     }
   ],
   "ruleOutConditions": [
     {
-      "condition": "serious condition to exclude",
-      "reason": "why it must be ruled out",
-      "urgency": "immediate|soon|routine"
+      "condition": "Serious Condition to Rule Out",
+      "urgency": "immediate" or "routine",
+      "reason": "Why this needs to be ruled out"
     }
   ],
   "ageRelatedScreening": [
     {
-      "screening": "screening name",
-      "reason": "why recommended for this age/sex",
-      "frequency": "how often"
+      "screening": "Screening Name",
+      "reason": "Why recommended",
+      "frequency": "How often"
     }
   ],
   "crossSystemPatterns": [
     {
-      "pattern": "description of pattern across symptoms",
-      "implications": "what this pattern suggests",
-      "action": "recommended next steps"
+      "pattern": "Pattern description",
+      "implications": "What this means",
+      "action": "Recommended action"
     }
   ]
 }
 
-DO NOT include any text outside the JSON structure. DO NOT use markdown code blocks. Return ONLY the JSON object.`;
-
-    // Call Claude API
-    const anthropicResponse = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01"
-      },
-      body: JSON.stringify({
-        model: "claude-3-5-sonnet-20241022",
-        max_tokens: 4000,
-        messages: [{
-          role: "user",
-          content: prompt
+Important:
+- Be evidence-based and cite medical literature when possible
+- Rank conditions by likelihood based on the narrative
+- Always include red flags or urgent conditions in ruleOutConditions if applicable
+- Do not provide medical advice, only diagnostic possibilities
+- Response must be valid JSON only, no markdown formatting`
         }]
       })
     });
 
-    // Handle API errors
-    if (!anthropicResponse.ok) {
-      const errorData = await anthropicResponse.json().catch(() => ({}));
-      console.error("Claude API error:", {
-        status: anthropicResponse.status,
-        statusText: anthropicResponse.statusText,
-        error: errorData,
-        modelUsed: "claude-sonnet-4-20241022"
-      });
-      return res.status(anthropicResponse.status).json({ 
-        error: 'Claude API request failed',
-        details: errorData,
-        status: anthropicResponse.status
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('Anthropic API Error:', error);
+      return res.status(response.status).json({ 
+        error: 'Failed to generate analysis', 
+        details: error 
       });
     }
 
-    // Parse response
-    const data = await anthropicResponse.json();
-    let responseText = data.content[0].text;
+    const data = await response.json();
     
-    // Clean up any markdown formatting if present
-    responseText = responseText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+    // Extract the JSON from Claude's response
+    const content = data.content[0].text;
     
-    // Parse JSON
-    const diagnosis = JSON.parse(responseText);
-    
-    // Return to frontend
+    // Parse the JSON response
+    let diagnosis;
+    try {
+      // Remove any markdown code fences if present
+      const cleanedContent = content.replace(/```json\n?|\n?```/g, '').trim();
+      diagnosis = JSON.parse(cleanedContent);
+    } catch (parseError) {
+      console.error('JSON Parse Error:', parseError);
+      console.error('Content:', content);
+      return res.status(500).json({ 
+        error: 'Failed to parse AI response',
+        details: 'The AI response was not in valid JSON format'
+      });
+    }
+
+    // Return the diagnosis
     return res.status(200).json(diagnosis);
 
   } catch (error) {
-    console.error("Error in analyze-symptoms:", error);
+    console.error('Error in analyze-symptoms:', error);
     return res.status(500).json({ 
-      error: 'Failed to generate medical analysis',
-      message: error.message
+      error: 'Internal server error', 
+      message: error.message 
     });
   }
 }
+
+// For Express.js usage (alternative to serverless):
+// 
+// const express = require('express');
+// const router = express.Router();
+// 
+// router.post('/analyze-symptoms', async (req, res) => {
+//   // Use the same handler logic above
+//   return handler(req, res);
+// });
+// 
+// module.exports = router;
