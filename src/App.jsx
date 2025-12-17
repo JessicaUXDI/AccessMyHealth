@@ -1,23 +1,24 @@
-       import React, { useState } from 'react';
+   import React, { useState } from 'react';
 import { 
   Home, 
   Calendar, 
   FileText, 
   MessageSquare, 
   ChevronLeft, 
-  ChevronRight, 
-  TrendingUp, 
+  ChevronRight,
+  AlertCircle,
+  CheckCircle,
+  TrendingUp,
+  Activity,
   Brain, 
   Heart, 
   Bone, 
   Leaf, 
   Zap,
   Lock,
-  CheckCircle,
   RotateCcw,
   X
 } from 'lucide-react';
-import { Home, Calendar, FileText, MessageSquare, ChevronLeft, ChevronRight, AlertCircle, CheckCircle, TrendingUp, Activity, Heart, Brain, Bone, Leaf, Zap } from 'lucide-react';
 
 // Design System - Updated to Style Guide v1.0
 const colors = {
